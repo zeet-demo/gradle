@@ -21,15 +21,13 @@ import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.artifacts.PublishArtifact;
-import org.gradle.api.attributes.AttributeContainer;
-import org.gradle.api.attributes.Usage;
+import org.gradle.api.component.SoftwareComponentFactory;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.internal.artifacts.dsl.LazyPublishArtifact;
-import org.gradle.api.internal.attributes.ImmutableAttributesFactory;
-import org.gradle.api.internal.java.WebApplication;
 import org.gradle.api.internal.plugins.DefaultArtifactPublicationSet;
-import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.internal.DefaultWarPluginConvention;
+import org.gradle.api.plugins.jvm.JvmEcosystemAttributesDetails;
+import org.gradle.api.plugins.jvm.internal.JvmPluginServices;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.War;
@@ -46,14 +44,15 @@ public class WarPlugin implements Plugin<Project> {
     public static final String PROVIDED_RUNTIME_CONFIGURATION_NAME = "providedRuntime";
     public static final String WAR_TASK_NAME = "war";
     public static final String WEB_APP_GROUP = "web application";
+    public static final String COMPONENT_NAME = "web";
 
-    private final ObjectFactory objectFactory;
-    private final ImmutableAttributesFactory attributesFactory;
+    private final SoftwareComponentFactory softwareComponentFactory;
+    private final JvmPluginServices jvmPluginServices;
 
     @Inject
-    public WarPlugin(ObjectFactory objectFactory, ImmutableAttributesFactory attributesFactory) {
-        this.objectFactory = objectFactory;
-        this.attributesFactory = attributesFactory;
+    public WarPlugin(SoftwareComponentFactory softwareComponentFactory, JvmPluginServices jvmPluginServices) {
+        this.softwareComponentFactory = softwareComponentFactory;
+        this.jvmPluginServices = jvmPluginServices;
     }
 
     @Override
@@ -77,15 +76,27 @@ public class WarPlugin implements Plugin<Project> {
             });
         });
 
+        configurePublishing(project);
+        configureConfigurations(project.getConfigurations());
+    }
+
+    private void configurePublishing(Project project) {
         TaskProvider<War> war = project.getTasks().register(WAR_TASK_NAME, War.class, warTask -> {
             warTask.setDescription("Generates a war archive with all the compiled classes, the web-app content and the libraries.");
             warTask.setGroup(BasePlugin.BUILD_GROUP);
         });
-
+        // We create another component, "web", for backwards compatibility
+        project.getComponents().add(softwareComponentFactory.adhoc("web"));
+        // The name of the variant is also chosen for backwards compatibility
+        jvmPluginServices.createOutgoingElements("master", builder ->
+            builder.providesRuntime()
+                .artifact(war)
+                .providesAttributes(JvmEcosystemAttributesDetails::withEmbeddedDependencies)
+                .published(COMPONENT_NAME)
+        );
+        // This is legacy, for 'maven' publishing (the old one)
         PublishArtifact warArtifact = new LazyPublishArtifact(war);
         project.getExtensions().getByType(DefaultArtifactPublicationSet.class).addCandidate(warArtifact);
-        configureConfigurations(project.getConfigurations());
-        configureComponent(project, warArtifact);
     }
 
     public void configureConfigurations(ConfigurationContainer configurationContainer) {
@@ -98,9 +109,4 @@ public class WarPlugin implements Plugin<Project> {
         configurationContainer.getByName(JavaPlugin.RUNTIME_CONFIGURATION_NAME).extendsFrom(provideRuntimeConfiguration);
     }
 
-    private void configureComponent(Project project, PublishArtifact warArtifact) {
-        AttributeContainer attributes = attributesFactory.mutable()
-            .attribute(Usage.USAGE_ATTRIBUTE, objectFactory.named(Usage.class, Usage.JAVA_RUNTIME));
-        project.getComponents().add(objectFactory.newInstance(WebApplication.class, warArtifact, "master", attributes));
-    }
 }

@@ -123,4 +123,13 @@ public interface OutgoingElementsBuilder {
      * dependencies will appear as optional in the generated POM file.
      */
     OutgoingElementsBuilder published();
+
+    /**
+     * Configures this outgoing variant for publication. A published outgoing variant
+     * configured this way will be mapped to the "optional" scope, meaning that its
+     * dependencies will appear as optional in the generated POM file.
+     *
+     * @param componentName the name of the component for which this configuration is published
+     */
+    OutgoingElementsBuilder published(String componentName);
 }

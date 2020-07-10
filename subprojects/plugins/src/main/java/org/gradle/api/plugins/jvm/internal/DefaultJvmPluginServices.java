@@ -18,6 +18,7 @@ package org.gradle.api.plugins.jvm.internal;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import org.gradle.api.Action;
 import org.gradle.api.InvalidUserDataException;
 import org.gradle.api.JavaVersion;
@@ -269,7 +270,7 @@ public class DefaultJvmPluginServices implements JvmPluginServices {
         List<Object> artifactProducers;
         List<Capability> capabilities;
         boolean classDirectory;
-        private boolean published;
+        private Set<String> componentNames;
 
         @Inject
         public DefaultElementsConfigurationBuilder(String name, JvmPluginServices jvmEcosystemUtilities, ConfigurationContainer configurations, SoftwareComponentContainer components) {
@@ -331,10 +332,12 @@ public class DefaultJvmPluginServices implements JvmPluginServices {
                 }
                 jvmEcosystemUtilities.configureClassesDirectoryVariant(name, sourceSet);
             }
-            if (published) {
-                AdhocComponentWithVariants component = findJavaComponent();
-                if (component != null) {
-                    component.addVariantsFromConfiguration(cnf, ConfigurationVariantDetails::mapToOptional);
+            if (componentNames != null) {
+                for (String componentName : componentNames) {
+                    AdhocComponentWithVariants component = findJavaComponent(componentName);
+                    if (component != null) {
+                        component.addVariantsFromConfiguration(cnf, ConfigurationVariantDetails::mapToOptional);
+                    }
                 }
             }
             return cnf;
@@ -399,13 +402,21 @@ public class DefaultJvmPluginServices implements JvmPluginServices {
 
         @Override
         public OutgoingElementsBuilder published() {
-            this.published = true;
+            return published("java");
+        }
+
+        @Override
+        public OutgoingElementsBuilder published(String componentName) {
+            if (componentNames == null) {
+                componentNames = Sets.newHashSet();
+            }
+            this.componentNames.add(componentName);
             return this;
         }
 
         @Nullable
-        public AdhocComponentWithVariants findJavaComponent() {
-            SoftwareComponent component = components.findByName("java");
+        public AdhocComponentWithVariants findJavaComponent(String name) {
+            SoftwareComponent component = components.findByName(name);
             if (component instanceof AdhocComponentWithVariants) {
                 return (AdhocComponentWithVariants) component;
             }
