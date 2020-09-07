@@ -42,10 +42,10 @@ val generateTemplate = tasks.register<JvmProjectGeneratorTask>("javaProject") {
 
     buildSrcTemplate = "buildsrc-plugins"
     setProjects(50)
-    sourceFiles = 200
-    testSourceFiles = 50 // verbose tests are time consuming
-    filesPerPackage = 5
-    linesOfCodePerSourceFile = 150
+    sourceFiles = 2
+    testSourceFiles = 2 // verbose tests are time consuming
+    filesPerPackage = 1
+    linesOfCodePerSourceFile = 15
     numberOfScriptPlugins = 30
     rootProjectTemplates = listOf("root")
     subProjectTemplates = listOf("project-with-source")

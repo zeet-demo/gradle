@@ -34,8 +34,8 @@ class BuildScanPluginPerformanceTest extends AbstractBuildScanPluginPerformanceT
 
     private static final String WITHOUT_PLUGIN_LABEL = "1 without plugin"
     private static final String WITH_PLUGIN_LABEL = "2 with plugin"
-    public static final int WARMUPS = 10
-    public static final int INVOCATIONS = 20
+    public static final int WARMUPS = 1
+    public static final int INVOCATIONS = 1
 
     @Unroll
     def "large java project with and without plugin application (#scenario)"() {
