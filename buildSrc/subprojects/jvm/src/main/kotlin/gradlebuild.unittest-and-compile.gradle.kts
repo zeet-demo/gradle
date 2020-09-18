@@ -200,6 +200,8 @@ fun configureTests() {
 
         maxParallelForks = project.maxParallelForks
 
+        useJUnitPlatform()
+
         configureJvmForTest()
         addOsAsInputs()
 
