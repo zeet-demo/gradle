@@ -137,7 +137,8 @@ public class MavenBuildExperimentRunner extends AbstractBuildExperimentRunner {
             ),
             invocationSettings.getWarmUpCount(),
             invocationSettings.getBuildCount(),
-            invocationSettings.getOutputDir()
+            invocationSettings.getOutputDir(),
+            null
         );
     }
 }
