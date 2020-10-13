@@ -40,6 +40,7 @@ import org.gradle.internal.resource.local.FileResourceConnector;
 import org.gradle.internal.resource.local.FileResourceRepository;
 import org.gradle.internal.snapshot.CaseSensitivity;
 import org.gradle.internal.snapshot.SnapshotHierarchy;
+import org.gradle.internal.snapshot.impl.DirectorySnapshotterStatistics;
 import org.gradle.internal.time.Time;
 import org.gradle.internal.vfs.FileSystemAccess;
 import org.gradle.internal.vfs.VirtualFileSystem;
@@ -220,7 +221,8 @@ public class TestFiles {
             new StringInterner(),
             fileSystem(),
             virtualFileSystem,
-            locations -> {}
+            locations -> {},
+            new DirectorySnapshotterStatistics.Collector()
         );
     }
 
