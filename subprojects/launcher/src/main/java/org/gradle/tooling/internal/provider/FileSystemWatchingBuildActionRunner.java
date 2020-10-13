@@ -26,8 +26,8 @@ import org.gradle.internal.invocation.BuildAction;
 import org.gradle.internal.invocation.BuildActionRunner;
 import org.gradle.internal.invocation.BuildController;
 import org.gradle.internal.operations.BuildOperationRunner;
+import org.gradle.internal.service.ServiceRegistry;
 import org.gradle.internal.service.scopes.VirtualFileSystemServices;
-import org.gradle.internal.service.scopes.VirtualFileSystemStatisticsCollector;
 import org.gradle.internal.vfs.VirtualFileSystem;
 import org.gradle.internal.watch.vfs.BuildLifecycleAwareVirtualFileSystem;
 import org.gradle.internal.watch.vfs.BuildLifecycleAwareVirtualFileSystem.VfsLogging;
@@ -48,9 +48,11 @@ public class FileSystemWatchingBuildActionRunner implements BuildActionRunner {
     public Result run(BuildAction action, BuildController buildController) {
         GradleInternal gradle = buildController.getGradle();
         StartParameterInternal startParameter = gradle.getStartParameter();
-        BuildLifecycleAwareVirtualFileSystem virtualFileSystem = gradle.getServices().get(BuildLifecycleAwareVirtualFileSystem.class);
-        VirtualFileSystemStatisticsCollector statistics = gradle.getServices().get(VirtualFileSystemStatisticsCollector.class);
-        BuildOperationRunner buildOperationRunner = gradle.getServices().get(BuildOperationRunner.class);
+        ServiceRegistry services = gradle.getServices();
+        BuildLifecycleAwareVirtualFileSystem virtualFileSystem = services.get(BuildLifecycleAwareVirtualFileSystem.class);
+        FileSystemStatisticsCollector fileSystemStatisticsCollector = services.get(FileSystemStatisticsCollector.class);
+        CachingFileHasherStatisticsCollector cachingFileHasherStatisticsCollector = services.get(CachingFileHasherStatisticsCollector.class);
+        BuildOperationRunner buildOperationRunner = services.get(BuildOperationRunner.class);
 
         boolean watchFileSystem = startParameter.isWatchFileSystem();
         VfsLogging verboseVfsLogging = startParameter.isVfsVerboseLogging()
@@ -72,19 +74,9 @@ public class FileSystemWatchingBuildActionRunner implements BuildActionRunner {
         } finally {
             int maximumNumberOfWatchedHierarchies = VirtualFileSystemServices.getMaximumNumberOfWatchedHierarchies(startParameter);
             virtualFileSystem.beforeBuildFinished(watchFileSystem, verboseVfsLogging, debugWatchLogging, buildOperationRunner, maximumNumberOfWatchedHierarchies);
-            reportStatistics(statistics.collect());
+            LOGGER.warn("STAT:FS {}", fileSystemStatisticsCollector.collect());
+            LOGGER.warn("STAT:HASHER {}", cachingFileHasherStatisticsCollector.collect());
         }
-    }
-
-    private void reportStatistics(VirtualFileSystemStatisticsCollector.Statistics statistics) {
-        FileSystemStatisticsCollector.Statistics fileSystemStatistics = statistics.getFileSystemStatistics();
-        LOGGER.warn("VFS: stat() x {}. getUnixMode() x {}",
-            fileSystemStatistics.getStatsCount(), fileSystemStatistics.getUnixModeCount());
-
-        CachingFileHasherStatisticsCollector.Statistics cachingFileHasherStatistics = statistics.getCachingFileHasherStatistics();
-        LOGGER.warn("VFS: hashed {} files ({} bytes), served has for {} files from cache ({} bytes)",
-            cachingFileHasherStatistics.getHashedFileCount(), cachingFileHasherStatistics.getHashedContentLength(),
-            cachingFileHasherStatistics.getCachedFileCount(), cachingFileHasherStatistics.getCachedContentLength());
     }
 
     private static void dropVirtualFileSystemIfRequested(StartParameterInternal startParameter, BuildLifecycleAwareVirtualFileSystem virtualFileSystem) {
