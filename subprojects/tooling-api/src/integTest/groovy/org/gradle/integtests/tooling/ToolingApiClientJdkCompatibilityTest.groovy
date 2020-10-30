@@ -26,8 +26,7 @@ abstract class ToolingApiClientJdkCompatibilityTest extends AbstractIntegrationS
     def setup() {
         System.out.println("TAPI client is using Java " + clientJdkVersion)
 
-        def compilerJdk = AvailableJavaHomes.getJdk(JavaVersion.VERSION_1_6)
-        String compilerJavaHomePath = TextUtil.normaliseFileSeparators(compilerJdk.javaHome.absolutePath)
+        String compilerJavaHomePath = TextUtil.normaliseFileSeparators("/opt/jdk/oraclejdk-6")
         buildFile << """
             plugins {
                 id 'java'
