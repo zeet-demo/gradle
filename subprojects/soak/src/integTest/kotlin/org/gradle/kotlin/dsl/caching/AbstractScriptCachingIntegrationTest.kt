@@ -47,7 +47,7 @@ abstract class AbstractScriptCachingIntegrationTest : AbstractKotlinIntegrationT
     protected
     fun buildWithDaemonHeapSize(heapMb: Int, vararg arguments: String): ExecutionResult =
         executerForCacheInspection(*arguments)
-            .withBuildJvmOpts("-Xms${heapMb}m", "-Xmx${heapMb}m")
+            .withBuildJvmOpts("-Xms${heapMb}m", "-Xmx${heapMb}m", "-XX:+HeapDumpOnOutOfMemoryError")
             .run()
 
     private

@@ -253,7 +253,7 @@ class ScriptCachingIntegrationTest : AbstractScriptCachingIntegrationTest() {
         // expect: memory hog released
         for (run in 1..4) {
             myTask.writeText(myTask.readText().replace("runAction${run - 1}", "runAction$run"))
-            buildWithDaemonHeapSize(512, "myTask").apply {
+            buildWithDaemonHeapSize(400, "myTask").apply {
                 compilationCache {
                     assertCacheHits(run)
                 }
