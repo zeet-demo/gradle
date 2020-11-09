@@ -80,8 +80,6 @@ public class DefaultPerformanceExecutionDataProvider extends PerformanceExecutio
     }
 
     private void setExecutions(ScenarioBuildResultData scenarioBuildResultData, List<String> teamCityBuildIds, List<? extends PerformanceTestExecution> recentExecutions) {
-        System.out.println(JsonOutput.toJson(scenarioBuildResultData));
-        System.out.println(JsonOutput.toJson(recentExecutions));
         List<? extends PerformanceTestExecution> currentBuildExecutions = recentExecutions.stream()
             .filter(execution -> teamCityBuildIds.contains(execution.getTeamCityBuildId()))
             .collect(toList());

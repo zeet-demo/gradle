@@ -75,6 +75,7 @@ class PerformanceReporter {
                 spec.ignoreExitValue = true
                 spec.setErrorOutput(output)
                 spec.setStandardOutput(output)
+                spec.debug = true
             }
         })
 
