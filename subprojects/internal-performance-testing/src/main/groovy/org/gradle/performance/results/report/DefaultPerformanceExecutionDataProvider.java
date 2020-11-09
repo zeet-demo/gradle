@@ -81,7 +81,8 @@ public class DefaultPerformanceExecutionDataProvider extends PerformanceExecutio
 
     private void setExecutions(ScenarioBuildResultData scenarioBuildResultData, List<String> teamCityBuildIds, List<? extends PerformanceTestExecution> recentExecutions) {
         if(scenarioBuildResultData.getScenarioName().contains("up-to-date assemble (parallel false)")) {
-            System.out.println(JsonOutput.toJson(recentExecutions));
+            recentExecutions.forEach(it ->
+                System.out.printf("%s %s\n",it.getExecutionId(), it.getTeamCityBuildId()));
         }
         List<? extends PerformanceTestExecution> currentBuildExecutions = recentExecutions.stream()
             .filter(execution -> teamCityBuildIds.contains(execution.getTeamCityBuildId()))
