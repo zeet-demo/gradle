@@ -22,7 +22,6 @@ import com.zaxxer.hikari.HikariDataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 public class PerformanceDatabase {
@@ -81,11 +80,9 @@ public class PerformanceDatabase {
     }
 
     public <T> T withConnection(ConnectionAction<T> action) throws SQLException {
-        long t0 = System.currentTimeMillis();
-        T ret = action.execute(getConnection());
-        new Throwable().printStackTrace();
-        System.err.println(new Date() + " Time: " + (System.currentTimeMillis() - t0) + " ms");
-        return ret;
+        try (Connection connection = getConnection()) {
+            return action.execute(connection);
+        }
     }
 
     public <T> T withConnection(String actionName, ConnectionAction<T> action) {
