@@ -38,7 +38,8 @@ public class PerformanceDatabase {
 
     private Connection getConnection() throws SQLException {
         if (dataSource == null) {
-            new Throwable().printStackTrace();
+            if(true)
+            throw new RuntimeException();
 
             HikariConfig config = new HikariConfig();
             config.setJdbcUrl(getUrl());
