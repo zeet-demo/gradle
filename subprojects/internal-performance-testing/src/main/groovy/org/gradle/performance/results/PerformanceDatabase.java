@@ -22,6 +22,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 public class PerformanceDatabase {
@@ -38,15 +39,12 @@ public class PerformanceDatabase {
 
     private Connection getConnection() throws SQLException {
         if (dataSource == null) {
-            if(true)
-            throw new RuntimeException();
-
             HikariConfig config = new HikariConfig();
             config.setJdbcUrl(getUrl());
             config.setUsername(getUserName());
             config.setPassword(getPassword());
             config.setMaximumPoolSize(2);
-            config.setConnectionTimeout(60*1000);
+            config.setConnectionTimeout(60 * 1000);
             dataSource = new HikariDataSource(config);
 
             executeInitializers(dataSource.getConnection());
@@ -83,7 +81,11 @@ public class PerformanceDatabase {
     }
 
     public <T> T withConnection(ConnectionAction<T> action) throws SQLException {
-        return action.execute(getConnection());
+        long t0 = System.currentTimeMillis();
+        T ret = action.execute(getConnection());
+        new Throwable().printStackTrace();
+        System.err.println(new Date() + " Time: " + (System.currentTimeMillis() - t0) + " ms");
+        return ret;
     }
 
     public <T> T withConnection(String actionName, ConnectionAction<T> action) {
