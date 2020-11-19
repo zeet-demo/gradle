@@ -35,11 +35,14 @@ public class PerformanceDatabase {
     }
 
     private Connection getConnection() throws SQLException {
+        long start = System.currentTimeMillis();
         Connection connection = DriverManager.getConnection(getUrl(), getUserName(), getPassword());
+        long getConn = System.currentTimeMillis();
         if (!initialized) {
             executeInitializers(connection);
             initialized = true;
         }
+        System.out.printf("get conn takes %d ms, init takes %d ms", getConn - start, System.currentTimeMillis() - getConn);
         return connection;
     }
 
@@ -61,7 +64,7 @@ public class PerformanceDatabase {
         return System.getProperty(PERFORMANCE_DB_URL_PROPERTY_NAME) != null;
     }
 
-    public <T> T withConnection(ConnectionAction<T> action) throws SQLException {
+    private <T> T withConnection(ConnectionAction<T> action) throws SQLException {
         try (Connection connection = getConnection()) {
             return action.execute(connection);
         }
@@ -69,7 +72,10 @@ public class PerformanceDatabase {
 
     public <T> T withConnection(String actionName, ConnectionAction<T> action) {
         try {
-            return withConnection(action);
+            long start = System.currentTimeMillis();
+            T ret = withConnection(action);
+            System.out.printf("%s takes %d ms %n", actionName, System.currentTimeMillis() - start);
+            return ret;
         } catch (SQLException e) {
             throw new RuntimeException(String.format("Could not %s from datastore '%s'.", actionName, getUrl()), e);
         }
