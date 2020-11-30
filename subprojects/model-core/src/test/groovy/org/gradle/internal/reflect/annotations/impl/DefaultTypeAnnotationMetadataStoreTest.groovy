@@ -156,7 +156,7 @@ class DefaultTypeAnnotationMetadataStoreTest extends Specification implements Va
         assertProperties TypeWithConflictingFieldAndMethodAnnotation, [
             property: [(TYPE): Small],
         ], [
-            strict(conflictingAnnotationsMessage { property('property').inConflict('Small', 'Large').includeLink() })
+            strict(conflictingAnnotationsMessage { property('property').inConflict('Large', 'Small').includeLink() })
         ]
     }
 
@@ -563,7 +563,7 @@ class DefaultTypeAnnotationMetadataStoreTest extends Specification implements Va
             smallThenLarge: [(TYPE): Small]
         ], [
             strict(conflictingAnnotationsMessage { property('largeThenSmall').inConflict('Large', 'Small').includeLink() }),
-            strict(conflictingAnnotationsMessage { property('smallThenLarge').inConflict('Small', 'Large').includeLink() })
+            strict(conflictingAnnotationsMessage { property('smallThenLarge').inConflict('Large', 'Small').includeLink() })
         ]
     }
 
