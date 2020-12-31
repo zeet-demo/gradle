@@ -1,5 +1,6 @@
 package configurations
 
+import Gradle_Check.model.SUBPROJECTS_WITH_TD
 import Gradle_Check.model.slowSubprojects
 import common.Os
 import jetbrains.buildServer.configs.kotlin.v2019_2.AbsoluteId
@@ -53,7 +54,8 @@ class FunctionalTest(
             ).filter { it.isNotBlank() }.joinToString(separator = " "),
         timeout = testCoverage.testType.timeout,
         extraSteps = extraBuildSteps,
-        preSteps = preBuildSteps)
+        preSteps = preBuildSteps
+    )
 
     params {
         if (enableTestDistribution) {
@@ -81,7 +83,7 @@ class FunctionalTest(
     }
 })
 
-fun enableExperimentalTestDistribution(testCoverage: TestCoverage, subprojects: List<String>) = testCoverage.os == Os.LINUX
+fun enableExperimentalTestDistribution(testCoverage: TestCoverage, subprojects: List<String>) = testCoverage.os == Os.LINUX && subprojects.size == 1 && SUBPROJECTS_WITH_TD.contains(subprojects[0])
 
 fun getTestTaskName(testCoverage: TestCoverage, stage: Stage, subprojects: List<String>): String {
     val testTaskName = "${testCoverage.testType.name}Test"
