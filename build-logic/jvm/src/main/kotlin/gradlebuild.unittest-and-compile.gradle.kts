@@ -221,6 +221,7 @@ fun configureTests() {
             distribution {
                 enabled.set(true)
                 maxLocalExecutors.set(2)
+                maxRemoteExecutors.set(20)
                 if (BuildEnvironment.isCiServer) {
                     when {
                         OperatingSystem.current().isLinux -> requirements.set(listOf("os=linux", "gbt-dogfooding-test"))
