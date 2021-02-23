@@ -32,5 +32,4 @@ fun branchFilter(branch: VersionedSettingsBranch) = """
 
 val allBranchesFilter = """
     +:*
-    -:<default>
 """.trimIndent()
