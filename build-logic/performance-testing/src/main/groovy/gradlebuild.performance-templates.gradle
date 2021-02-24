@@ -402,10 +402,10 @@ performanceTest.registerTestProject("santaTrackerAndroidBuild", RemoteProject) {
 }
 
 performanceTest.registerTestProject("uberMobileApp", RemoteProject) {
-    remoteUri = 'https://github.com/gradle/android-build-eval.git'
+    remoteUri = 'https://github.com/uber-common/android-build-eval.git'
     subdirectory = 'mobile_app1'
-    // Pinned from PR https://github.com/uber-common/android-build-eval/pull/17
-    ref = '18ff193198010064e43e9244edde91ab54c2da70'
+    // Pinned from master branch
+    ref = '0f4078b837224375183945680d502c9f20cc4c57'
     doLast(objects.newInstance(DeleteOkBuckDirectory))
 }
 
