@@ -16,6 +16,8 @@
 
 package org.gradle.performance.fixture
 
+import org.gradle.performance.mutator.ApplyAbiChangeToJavaSourceFileMutator
+import org.gradle.performance.mutator.ApplyNonAbiChangeToJavaSourceFileMutator
 import org.gradle.profiler.InvocationSettings
 import org.gradle.profiler.mutations.ApplyAbiChangeToSourceFileMutator
 import org.gradle.profiler.mutations.ApplyNonAbiChangeToSourceFileMutator
@@ -58,7 +60,10 @@ class IncrementalAndroidTestProject extends AndroidTestProject implements Increm
         configure(runner)
         runner.tasksToRun = [taskToRunForChange]
         runner.addBuildMutator { invocationSettings ->
-            new ApplyAbiChangeToSourceFileMutator(getFileToChange(invocationSettings))
+            def fileToChange = getFileToChange(invocationSettings)
+            return (fileToChange.name.endsWith('.java')) ?
+                new ApplyAbiChangeToJavaSourceFileMutator(fileToChange) :
+                new ApplyAbiChangeToSourceFileMutator(fileToChange)
         }
     }
 
@@ -78,7 +83,10 @@ class IncrementalAndroidTestProject extends AndroidTestProject implements Increm
         configure(runner)
         runner.tasksToRun = [taskToRunForChange]
         runner.addBuildMutator { invocationSettings ->
-            new ApplyNonAbiChangeToSourceFileMutator(getFileToChange(invocationSettings))
+            def fileToChange = getFileToChange(invocationSettings)
+            return (fileToChange.name.endsWith('.java')) ?
+                new ApplyNonAbiChangeToJavaSourceFileMutator(fileToChange) :
+                new ApplyNonAbiChangeToSourceFileMutator(fileToChange)
         }
     }
 
