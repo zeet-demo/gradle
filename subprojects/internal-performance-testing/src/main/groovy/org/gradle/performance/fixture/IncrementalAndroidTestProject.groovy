@@ -34,7 +34,7 @@ class IncrementalAndroidTestProject extends AndroidTestProject implements Increm
 
     static final UBER_MOBILE_APP = new IncrementalAndroidTestProject(
         templateName: 'uberMobileApp',
-        pathToChange: 'leafModuleAvg/src/main/java/leafModuleAvgpackageJava0/Foo0.java',
+        pathToChange: 'leafModuleMax/src/main/java/leafModuleMaxpackageJava0/Foo0.java',
         taskToRunForChange: ':rootModule:assembleDebug'
     )
 
