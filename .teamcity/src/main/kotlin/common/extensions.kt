@@ -71,7 +71,7 @@ fun VcsSettings.filterDefaultBranch() {
 
 const val failedTestArtifactDestination = ".teamcity/gradle-logs"
 
-fun BuildType.applyDefaultSettings(os: Os = Os.LINUX, timeout: Int = 30, vcsRoot: String = "Gradle_Branches_GradlePersonalBranches") {
+fun BuildType.applyDefaultSettings(os: Os = Os.LINUX, timeout: Int = 30, vcsRoot: String = "Gradle_GradleDefaultMaster") {
     artifactRules = """
         build/report-* => $failedTestArtifactDestination
         build/tmp/test files/** => $failedTestArtifactDestination/test-files
@@ -83,9 +83,6 @@ fun BuildType.applyDefaultSettings(os: Os = Os.LINUX, timeout: Int = 30, vcsRoot
     vcs {
         root(AbsoluteId(vcsRoot))
         checkoutMode = CheckoutMode.ON_AGENT
-        if (vcsRoot.contains("Branches")) {
-            filterDefaultBranch()
-        }
     }
 
     requirements {
