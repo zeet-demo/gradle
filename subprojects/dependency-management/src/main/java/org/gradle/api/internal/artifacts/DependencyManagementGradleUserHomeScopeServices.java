@@ -102,11 +102,7 @@ public class DependencyManagementGradleUserHomeScopeServices {
                 .withDisplayName("Artifact transforms cache"),
             fileAccessTimeJournal,
             executionHistoryStore,
-            crossBuildInMemoryCacheFactory.newCacheRetainingDataFromPreviousBuild(result -> result
-                .map(transformedFiles -> transformedFiles.stream()
-                    .allMatch(transformedFile -> globalCacheLocations.isInsideGlobalCache(transformedFile.getAbsolutePath()))
-                ).getOrMapFailure(__ -> false)
-            )
+            crossBuildInMemoryCacheFactory.newCacheRetainingDataFromPreviousBuild(result -> false)
         );
     }
 }
