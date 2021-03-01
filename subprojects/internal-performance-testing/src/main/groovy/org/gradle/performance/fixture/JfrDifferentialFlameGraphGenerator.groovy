@@ -54,7 +54,7 @@ class JfrDifferentialFlameGraphGenerator implements ProfilerFlameGraphGenerator 
 
     @Override
     void generateDifferentialGraphs(BuildExperimentSpec experimentSpec) {
-        Collection<File> experiments = getJfrOutputDirectory(experimentSpec).listFiles().findAll { it.directory }
+        Collection<File> experiments = getJfrOutputDirectory(experimentSpec).listFiles().findAll { it.directory && it.name.endsWith("graphs") }
         experiments.each { File experiment ->
             EventType.values().each { EventType type ->
                 DetailLevel.values().each { DetailLevel level ->
