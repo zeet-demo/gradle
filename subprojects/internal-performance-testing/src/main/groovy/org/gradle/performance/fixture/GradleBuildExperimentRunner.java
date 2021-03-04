@@ -169,7 +169,7 @@ public class GradleBuildExperimentRunner extends AbstractBuildExperimentRunner {
             .setGradleUserHome(determineGradleUserHome(invocationSpec))
             .setWarmupCount(warmupsForExperiment(experiment))
             .setIterations(invocationsForExperiment(experiment))
-            .setMeasureConfigTime(false)
+            .setMeasureConfigTime(true)
             .setMeasuredBuildOperations(experiment.getMeasuredBuildOperations())
             .setMeasureGarbageCollection(measureGarbageCollection)
             .setCsvFormat(CsvGenerator.Format.LONG)
