@@ -16,8 +16,10 @@
 
 package org.gradle.internal.watch.vfs.impl;
 
+import org.gradle.internal.watch.WatchingNotSupportedException;
+
 import java.io.File;
 
 public interface WatchableFileSystemRegistry {
-    boolean isWatchingSupported(File path);
+    void ensureWatchingSupported(File path) throws WatchingNotSupportedException;
 }

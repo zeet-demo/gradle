@@ -17,18 +17,18 @@
 package org.gradle.internal.watch.vfs.impl;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import net.rubygrapefruit.platform.Native;
 import net.rubygrapefruit.platform.file.FileSystemInfo;
 import net.rubygrapefruit.platform.file.FileSystems;
+import org.gradle.internal.watch.WatchingNotSupportedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 
 public class DefaultWatchableFileSystemRegistry implements WatchableFileSystemRegistry {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultWatchableFileSystemRegistry.class);
@@ -57,7 +57,7 @@ public class DefaultWatchableFileSystemRegistry implements WatchableFileSystemRe
         "vboxsf"
     );
 
-    private final ImmutableMap<String, Boolean> fileSystemRoots;
+    private final ImmutableList<FileSystemSupport> fileSystemRoots;
 
     public static WatchableFileSystemRegistry create() {
         return new DefaultWatchableFileSystemRegistry(Native.get(FileSystems.class).getFileSystems());
@@ -65,43 +65,34 @@ public class DefaultWatchableFileSystemRegistry implements WatchableFileSystemRe
 
     @VisibleForTesting
     DefaultWatchableFileSystemRegistry(List<FileSystemInfo> fileSystems) {
-        ImmutableMap.Builder<String, Boolean> builder = ImmutableMap.builder();
+        ImmutableList.Builder<FileSystemSupport> builder = ImmutableList.<FileSystemSupport>builder();
         fileSystems.stream()
             // Sort by longest path first so we always match most the specific location in case locations are nested
             .sorted(Comparator.comparingInt(fileSystem -> -fileSystem.getMountPoint().getAbsolutePath().length()))
-            .forEach(fileSystem -> {
-                boolean supported = isSupported(fileSystem);
-                String prefix = toAbsolutePathPrefix(fileSystem.getMountPoint());
+            .map(FileSystemSupport::new)
+            .forEach(support -> {
                 LOGGER.info("Detected {} {}: {} from {} (remote: {}, case-sensitive: {}, case-preserving: {})",
-                    supported ? "supported" : "unsupported",
-                    fileSystem.getFileSystemType(),
-                    prefix,
-                    fileSystem.getDeviceName(),
-                    fileSystem.isRemote(),
-                    fileSystem.isCaseSensitive(),
-                    fileSystem.isCasePreserving());
-                builder.put(prefix, supported);
+                    support.isSupported() ? "supported" : "unsupported",
+                    support.getFileSystem().getFileSystemType(),
+                    support.getPrefix(),
+                    support.getFileSystem().getDeviceName(),
+                    support.getFileSystem().isRemote(),
+                    support.getFileSystem().isCaseSensitive(),
+                    support.getFileSystem().isCasePreserving());
+                builder.add(support);
             });
         this.fileSystemRoots = builder.build();
     }
 
-    private static boolean isSupported(FileSystemInfo fileSystem) {
-        // We don't support network file systems
-        if (fileSystem.isRemote()) {
-            return false;
-        }
-        return SUPPORTED_FILE_SYSTEM_TYPES.contains(fileSystem.getFileSystemType());
-    }
-
     @Override
-    public boolean isWatchingSupported(File path) {
+    public void ensureWatchingSupported(File path) {
         String prefix = toAbsolutePathPrefix(path);
-        for (Map.Entry<String, Boolean> entry : fileSystemRoots.entrySet()) {
-            if (prefix.startsWith(entry.getKey())) {
-                return entry.getValue();
+        for (FileSystemSupport support : fileSystemRoots) {
+            if (support.isSupported(prefix)) {
+                return;
             }
         }
-        return false;
+        throw new WatchingNotSupportedException(String.format("Cannot watch file hierarchy at '%s' because file system is unknown", prefix));
     }
 
     private static String toAbsolutePathPrefix(File path) {
@@ -109,5 +100,52 @@ public class DefaultWatchableFileSystemRegistry implements WatchableFileSystemRe
         return absolutePath.equals(File.separator)
             ? absolutePath
             : absolutePath + File.separatorChar;
+    }
+
+    private static class FileSystemSupport {
+        private final FileSystemInfo fileSystem;
+        private final String prefix;
+        private final boolean supported;
+
+        public FileSystemSupport(FileSystemInfo fileSystem) {
+            this.fileSystem = fileSystem;
+            this.prefix = toAbsolutePathPrefix(fileSystem.getMountPoint());
+            this.supported = isSupported(fileSystem);
+        }
+
+        private static boolean isSupported(FileSystemInfo fileSystem) {
+            // We don't support network file systems
+            if (fileSystem.isRemote()) {
+                return false;
+            }
+            return SUPPORTED_FILE_SYSTEM_TYPES.contains(fileSystem.getFileSystemType());
+        }
+
+        public FileSystemInfo getFileSystem() {
+            return fileSystem;
+        }
+
+        public String getPrefix() {
+            return prefix;
+        }
+
+        public boolean isSupported() {
+            return supported;
+        }
+
+        public boolean isSupported(String prefix) {
+            if (!prefix.startsWith(this.prefix)) {
+                return false;
+            }
+
+            if (!supported) {
+                throw new WatchingNotSupportedException(String.format("Cannot watch file hierarchy at '%s' because %s%s file system mounted on '%s' is not supported",
+                    prefix,
+                    fileSystem.isRemote() ? "remote " : "",
+                    fileSystem.getFileSystemType(),
+                    fileSystem.getMountPoint().getAbsolutePath()));
+            }
+            return true;
+        }
     }
 }

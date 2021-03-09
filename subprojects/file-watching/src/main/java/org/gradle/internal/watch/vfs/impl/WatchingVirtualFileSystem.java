@@ -174,11 +174,8 @@ public class WatchingVirtualFileSystem extends AbstractVirtualFileSystem impleme
     }
 
     private void registerWatchableHierarchyInternal(SnapshotHierarchy currentRoot, File watchableHierarchy) {
-        if (!watchableFileSystemRegistry.isWatchingSupported(watchableHierarchy)) {
-            // TODO Do not check if file system watching was enabled explicitly
-            throw new WatchingNotSupportedException(String.format("Tried to watch unsupported file system at '%s'",
-                watchableHierarchy.getAbsolutePath()));
-        }
+        // TODO Do not check if file system watching was enabled explicitly
+        watchableFileSystemRegistry.ensureWatchingSupported(watchableHierarchy);
         watchRegistry.registerWatchableHierarchy(watchableHierarchy, currentRoot);
     }
 
