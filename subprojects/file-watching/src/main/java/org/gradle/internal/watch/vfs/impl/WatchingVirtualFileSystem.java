@@ -58,6 +58,7 @@ public class WatchingVirtualFileSystem extends AbstractVirtualFileSystem impleme
     private final DaemonDocumentationIndex daemonDocumentationIndex;
     private final LocationsWrittenByCurrentBuild locationsWrittenByCurrentBuild;
     private final Set<File> watchableHierarchies = new HashSet<>();
+    private final WatchableFileSystemRegistry watchableFileSystemRegistry;
 
     private FileWatcherRegistry watchRegistry;
     private Exception reasonForNotWatchingFiles;
@@ -66,12 +67,14 @@ public class WatchingVirtualFileSystem extends AbstractVirtualFileSystem impleme
         FileWatcherRegistryFactory watcherRegistryFactory,
         VfsRootReference rootReference,
         DaemonDocumentationIndex daemonDocumentationIndex,
-        LocationsWrittenByCurrentBuild locationsWrittenByCurrentBuild
+        LocationsWrittenByCurrentBuild locationsWrittenByCurrentBuild,
+        WatchableFileSystemRegistry watchableFileSystemRegistry
     ) {
         super(rootReference);
         this.watcherRegistryFactory = watcherRegistryFactory;
         this.daemonDocumentationIndex = daemonDocumentationIndex;
         this.locationsWrittenByCurrentBuild = locationsWrittenByCurrentBuild;
+        this.watchableFileSystemRegistry = watchableFileSystemRegistry;
     }
 
     @Override
@@ -165,9 +168,18 @@ public class WatchingVirtualFileSystem extends AbstractVirtualFileSystem impleme
             }
             return withWatcherChangeErrorHandling(
                 currentRoot,
-                () -> watchRegistry.registerWatchableHierarchy(watchableHierarchy, currentRoot)
+                () -> registerWatchableHierarchyInternal(currentRoot, watchableHierarchy)
             );
         });
+    }
+
+    private void registerWatchableHierarchyInternal(SnapshotHierarchy currentRoot, File watchableHierarchy) {
+        if (!watchableFileSystemRegistry.isWatchingSupported(watchableHierarchy)) {
+            // TODO Do not check if file system watching was enabled explicitly
+            throw new WatchingNotSupportedException(String.format("Tried to watch unsupported file system at '%s'",
+                watchableHierarchy.getAbsolutePath()));
+        }
+        watchRegistry.registerWatchableHierarchy(watchableHierarchy, currentRoot);
     }
 
     @Override
@@ -264,7 +276,7 @@ public class WatchingVirtualFileSystem extends AbstractVirtualFileSystem impleme
                     stopWatchingAndInvalidateHierarchy();
                 }
             });
-            watchableHierarchies.forEach(watchableHierarchy -> watchRegistry.registerWatchableHierarchy(watchableHierarchy, currentRoot));
+            watchableHierarchies.forEach(watchableHierarchy -> registerWatchableHierarchyInternal(currentRoot, watchableHierarchy));
             watchableHierarchies.clear();
         } catch (Exception ex) {
             logWatchingError(ex, FILE_WATCHING_ERROR_MESSAGE_DURING_BUILD);

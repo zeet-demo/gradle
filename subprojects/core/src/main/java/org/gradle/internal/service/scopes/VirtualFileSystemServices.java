@@ -93,7 +93,9 @@ import org.gradle.internal.watch.registry.impl.DarwinFileWatcherRegistryFactory;
 import org.gradle.internal.watch.registry.impl.LinuxFileWatcherRegistryFactory;
 import org.gradle.internal.watch.registry.impl.WindowsFileWatcherRegistryFactory;
 import org.gradle.internal.watch.vfs.BuildLifecycleAwareVirtualFileSystem;
+import org.gradle.internal.watch.vfs.impl.DefaultWatchableFileSystemRegistry;
 import org.gradle.internal.watch.vfs.impl.LocationsWrittenByCurrentBuild;
+import org.gradle.internal.watch.vfs.impl.WatchableFileSystemRegistry;
 import org.gradle.internal.watch.vfs.impl.WatchingNotSupportedVirtualFileSystem;
 import org.gradle.internal.watch.vfs.impl.WatchingVirtualFileSystem;
 import org.slf4j.Logger;
@@ -203,13 +205,18 @@ public class VirtualFileSystemServices extends AbstractPluginServiceRegistry {
             return locationsWrittenByCurrentBuild;
         }
 
+        WatchableFileSystemRegistry createWatchableFileSystemRegistry() {
+            return DefaultWatchableFileSystemRegistry.create();
+        }
+
         BuildLifecycleAwareVirtualFileSystem createVirtualFileSystem(
             LocationsWrittenByCurrentBuild locationsWrittenByCurrentBuild,
             DocumentationRegistry documentationRegistry,
             NativeCapabilities nativeCapabilities,
             ListenerManager listenerManager,
             FileSystem fileSystem,
-            GlobalCacheLocations globalCacheLocations
+            GlobalCacheLocations globalCacheLocations,
+            WatchableFileSystemRegistry watchableFileSystemRegistry
         ) {
             CaseSensitivity caseSensitivity = fileSystem.isCaseSensitive() ? CASE_SENSITIVE : CASE_INSENSITIVE;
             VfsRootReference rootReference = new VfsRootReference(DefaultSnapshotHierarchy.empty(caseSensitivity));
@@ -222,7 +229,8 @@ public class VirtualFileSystemServices extends AbstractPluginServiceRegistry {
                     watcherRegistryFactory,
                     rootReference,
                     sectionId -> documentationRegistry.getDocumentationFor("gradle_daemon", sectionId),
-                    locationsWrittenByCurrentBuild
+                    locationsWrittenByCurrentBuild,
+                    watchableFileSystemRegistry
                 ))
                 .orElse(new WatchingNotSupportedVirtualFileSystem(rootReference));
             listenerManager.addListener((BuildAddedListener) buildState ->

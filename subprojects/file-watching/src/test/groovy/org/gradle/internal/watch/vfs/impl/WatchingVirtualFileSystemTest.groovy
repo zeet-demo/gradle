@@ -40,11 +40,15 @@ class WatchingVirtualFileSystemTest extends Specification {
     def daemonDocumentationIndex = Mock(DaemonDocumentationIndex)
     def locationsUpdatedByCurrentBuild = Mock(LocationsWrittenByCurrentBuild)
     def buildOperationRunner = new TestBuildOperationExecutor()
+    def watchableFileSystemRegistry = Stub(WatchableFileSystemRegistry) {
+        isWatchingSupported(_ as File) >> true
+    }
     def watchingVirtualFileSystem = new WatchingVirtualFileSystem(
         watcherRegistryFactory,
         rootReference,
         daemonDocumentationIndex,
-        locationsUpdatedByCurrentBuild
+        locationsUpdatedByCurrentBuild,
+        watchableFileSystemRegistry
     )
 
     def "invalidates the virtual file system before and after the build when watching is disabled"() {
