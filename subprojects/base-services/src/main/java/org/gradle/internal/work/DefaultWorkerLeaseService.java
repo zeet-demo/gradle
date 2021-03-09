@@ -239,6 +239,11 @@ public class DefaultWorkerLeaseService implements WorkerLeaseService, Stoppable 
             public boolean apply(@Nullable ResourceLock lock) {
                 return lock instanceof ProjectLock;
             }
+
+            @Override
+            public boolean test(ResourceLock input) {
+                return apply(input);
+            }
         });
     }
 
