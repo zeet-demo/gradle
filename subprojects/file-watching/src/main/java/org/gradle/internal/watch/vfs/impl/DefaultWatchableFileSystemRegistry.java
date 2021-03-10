@@ -22,12 +22,17 @@ import com.google.common.collect.ImmutableSet;
 import net.rubygrapefruit.platform.Native;
 import net.rubygrapefruit.platform.file.FileSystemInfo;
 import net.rubygrapefruit.platform.file.FileSystems;
+import org.gradle.internal.snapshot.CaseSensitivity;
+import org.gradle.internal.snapshot.ChildMap;
+import org.gradle.internal.snapshot.EmptyChildMap;
+import org.gradle.internal.snapshot.SingletonChildMap;
+import org.gradle.internal.snapshot.VfsRelativePath;
 import org.gradle.internal.watch.WatchingNotSupportedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.File;
-import java.util.Comparator;
 import java.util.List;
 
 public class DefaultWatchableFileSystemRegistry implements WatchableFileSystemRegistry {
@@ -57,7 +62,7 @@ public class DefaultWatchableFileSystemRegistry implements WatchableFileSystemRe
         "vboxsf"
     );
 
-    private final ImmutableList<FileSystemSupport> fileSystemRoots;
+    private final FileSystemRoots fileSystemRoots;
 
     public static WatchableFileSystemRegistry create() {
         return new DefaultWatchableFileSystemRegistry(Native.get(FileSystems.class).getFileSystems());
@@ -65,87 +70,118 @@ public class DefaultWatchableFileSystemRegistry implements WatchableFileSystemRe
 
     @VisibleForTesting
     DefaultWatchableFileSystemRegistry(List<FileSystemInfo> fileSystems) {
-        ImmutableList.Builder<FileSystemSupport> builder = ImmutableList.<FileSystemSupport>builder();
-        fileSystems.stream()
-            // Sort by longest path first so we always match most the specific location in case locations are nested
-            .sorted(Comparator.comparingInt(fileSystem -> -fileSystem.getMountPoint().getAbsolutePath().length()))
-            .map(FileSystemSupport::new)
-            .forEach(support -> {
-                LOGGER.info("Detected {} {}: {} from {} (remote: {}, case-sensitive: {}, case-preserving: {})",
-                    support.isSupported() ? "supported" : "unsupported",
-                    support.getFileSystem().getFileSystemType(),
-                    support.getPrefix(),
-                    support.getFileSystem().getDeviceName(),
-                    support.getFileSystem().isRemote(),
-                    support.getFileSystem().isCaseSensitive(),
-                    support.getFileSystem().isCasePreserving());
-                builder.add(support);
-            });
-        this.fileSystemRoots = builder.build();
+        FileSystemRoots fileSystemRoots = new FileSystemRoots(null, true, CaseSensitivity.CASE_SENSITIVE, EmptyChildMap.getInstance());
+        for (FileSystemInfo fileSystem : fileSystems) {
+            String absolutePath = fileSystem.getMountPoint().getAbsolutePath();
+            LOGGER.info("Detected {} {}: {} from {} (remote: {}, case-sensitive: {}, case-preserving: {})",
+                isSupported(fileSystem) ? "supported" : "unsupported",
+                fileSystem.getFileSystemType(),
+                absolutePath,
+                fileSystem.getDeviceName(),
+                fileSystem.isRemote(),
+                fileSystem.isCaseSensitive(),
+                fileSystem.isCasePreserving());
+            fileSystemRoots = fileSystemRoots.recordFileSystemInfo(VfsRelativePath.of(absolutePath), fileSystem);
+        }
+        this.fileSystemRoots = fileSystemRoots;
     }
 
     @Override
     public void ensureWatchingSupported(File path) {
-        String prefix = toAbsolutePathPrefix(path);
-        for (FileSystemSupport support : fileSystemRoots) {
-            if (support.isSupported(prefix)) {
-                return;
-            }
-        }
-        throw new WatchingNotSupportedException(String.format("Cannot watch file hierarchy at '%s' because file system is unknown", prefix));
-    }
-
-    private static String toAbsolutePathPrefix(File path) {
-        String absolutePath = path.getAbsolutePath();
-        return absolutePath.equals(File.separator)
-            ? absolutePath
-            : absolutePath + File.separatorChar;
-    }
-
-    private static class FileSystemSupport {
-        private final FileSystemInfo fileSystem;
-        private final String prefix;
-        private final boolean supported;
-
-        public FileSystemSupport(FileSystemInfo fileSystem) {
-            this.fileSystem = fileSystem;
-            this.prefix = toAbsolutePathPrefix(fileSystem.getMountPoint());
-            this.supported = isSupported(fileSystem);
-        }
-
-        private static boolean isSupported(FileSystemInfo fileSystem) {
-            // We don't support network file systems
-            if (fileSystem.isRemote()) {
-                return false;
-            }
-            return SUPPORTED_FILE_SYSTEM_TYPES.contains(fileSystem.getFileSystemType());
-        }
-
-        public FileSystemInfo getFileSystem() {
-            return fileSystem;
-        }
-
-        public String getPrefix() {
-            return prefix;
-        }
-
-        public boolean isSupported() {
-            return supported;
-        }
-
-        public boolean isSupported(String prefix) {
-            if (!prefix.startsWith(this.prefix)) {
-                return false;
-            }
-
-            if (!supported) {
-                throw new WatchingNotSupportedException(String.format("Cannot watch file hierarchy at '%s' because %s%s file system mounted on '%s' is not supported",
-                    prefix,
-                    fileSystem.isRemote() ? "remote " : "",
-                    fileSystem.getFileSystemType(),
-                    fileSystem.getMountPoint().getAbsolutePath()));
-            }
-            return true;
+        boolean supportsWatching = fileSystemRoots.supportsWatching(VfsRelativePath.of(path.getAbsolutePath()));
+        if (!supportsWatching) {
+            throw new WatchingNotSupportedException(String.format("Cannot watch file hierarchy at '%s' because file system is unknown", path.getAbsolutePath()));
         }
     }
+
+    private static class FileSystemRoots {
+        private final ChildMap<FileSystemRoots> children;
+        private final FileSystemInfo fileSystemInfo;
+        private final boolean supportsWatching;
+        private final CaseSensitivity caseSensitivity;
+
+        public FileSystemRoots(@Nullable FileSystemInfo fileSystemInfo, boolean supportsWatching, CaseSensitivity caseSensitivity, ChildMap<FileSystemRoots> children) {
+            this.fileSystemInfo = fileSystemInfo;
+            this.children = children;
+            this.supportsWatching = supportsWatching;
+            this.caseSensitivity = caseSensitivity;
+        }
+
+        public FileSystemRoots recordFileSystemInfo(VfsRelativePath relativePath, FileSystemInfo fileSystemInfo) {
+            if (relativePath.length() == 0) {
+                return new FileSystemRoots(fileSystemInfo, isSupported(fileSystemInfo), getCaseSensitivity(fileSystemInfo), children);
+            }
+            ChildMap<FileSystemRoots> newChildren = children.store(relativePath, caseSensitivity, new ChildMap.StoreHandler<FileSystemRoots>() {
+                @Override
+                public FileSystemRoots handleAsDescendantOfChild(VfsRelativePath pathInChild, FileSystemRoots child) {
+                    return child.recordFileSystemInfo(pathInChild, fileSystemInfo);
+                }
+
+                @Override
+                public FileSystemRoots handleAsAncestorOfChild(String childPath, FileSystemRoots child) {
+                    CaseSensitivity caseSensitivity = getCaseSensitivity(fileSystemInfo);
+                    return new FileSystemRoots(fileSystemInfo, isSupported(fileSystemInfo), caseSensitivity, new SingletonChildMap<>(VfsRelativePath.of(childPath).suffixStartingFrom(relativePath.length() + 1).getAsString(), child));
+                }
+
+                @Override
+                public FileSystemRoots mergeWithExisting(FileSystemRoots child) {
+                    boolean supportsWatching = isSupported(fileSystemInfo) && child.supportsWatching;
+                    return new FileSystemRoots(fileSystemInfo, supportsWatching, getCaseSensitivity(fileSystemInfo), child.children);
+                }
+
+                @Override
+                public FileSystemRoots createChild() {
+                    return new FileSystemRoots(fileSystemInfo, isSupported(fileSystemInfo), getCaseSensitivity(fileSystemInfo), EmptyChildMap.getInstance());
+                }
+
+                @Override
+                public FileSystemRoots createNodeFromChildren(ChildMap<FileSystemRoots> children) {
+                    boolean supportsWatching = children.values().stream().anyMatch(it -> it.supportsWatching);
+                    return new FileSystemRoots(null, supportsWatching, caseSensitivity, children);
+                }
+            });
+            boolean supportsWatching = this.supportsWatching && newChildren.values().stream().allMatch(it -> it.supportsWatching);
+            return new FileSystemRoots(this.fileSystemInfo, supportsWatching, caseSensitivity, newChildren);
+        }
+
+        public boolean supportsWatching(VfsRelativePath targetPath) {
+            if (targetPath.length() == 0) {
+                return supportsWatching;
+            }
+            return children.withNode(targetPath, caseSensitivity, new ChildMap.NodeHandler<FileSystemRoots, Boolean>() {
+                @Override
+                public Boolean handleAsDescendantOfChild(VfsRelativePath pathInChild, FileSystemRoots child) {
+                    return child.supportsWatching(pathInChild);
+                }
+
+                @Override
+                public Boolean handleAsAncestorOfChild(String childPath, FileSystemRoots child) {
+                    return child.supportsWatching;
+                }
+
+                @Override
+                public Boolean handleExactMatchWithChild(FileSystemRoots child) {
+                    return child.supportsWatching;
+                }
+
+                @Override
+                public Boolean handleUnrelatedToAnyChild() {
+                    return supportsWatching;
+                }
+            });
+        }
+
+        private static CaseSensitivity getCaseSensitivity(FileSystemInfo fileSystemInfo) {
+            return fileSystemInfo.isCaseSensitive() ? CaseSensitivity.CASE_SENSITIVE : CaseSensitivity.CASE_INSENSITIVE;
+        }
+    }
+
+    private static boolean isSupported(FileSystemInfo fileSystem) {
+        // We don't support network file systems
+        if (fileSystem.isRemote()) {
+            return false;
+        }
+        return SUPPORTED_FILE_SYSTEM_TYPES.contains(fileSystem.getFileSystemType());
+    }
+
 }
