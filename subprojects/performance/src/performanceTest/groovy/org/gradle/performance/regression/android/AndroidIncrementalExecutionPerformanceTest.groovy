@@ -44,6 +44,7 @@ class AndroidIncrementalExecutionPerformanceTest extends AbstractIncrementalExec
         AndroidTestProject.useLatestAgpVersion(runner)
         runner.args.add('-Dorg.gradle.parallel=true')
         runner.args.addAll(["--no-build-cache", "--no-scan"])
+        runner.args.add("--${StartParameterBuildOptions.WatchFileSystemOption.LONG_OPTION}")
         runner.args.add("-D${StartParameterBuildOptions.ConfigurationCacheProblemsOption.PROPERTY_NAME}=warn")
         runner.args.add("-DkotlinVersion=${KOTLIN_TARGET_VERSION}")
         runner.minimumBaseVersion = "6.5"
