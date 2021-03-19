@@ -69,7 +69,7 @@ public class LocalTaskNodeExecutor implements NodeExecutor {
                 localTaskNode,
                 localTaskNode.getTaskProperties(),
                 localTaskNode.getValidationContext(),
-                (historyMaintained, typeValidationContext) -> detectMissingDependencies(localTaskNode, historyMaintained, typeValidationContext)
+                (historyMaintained, typeValidationContext) -> {}
             );
             TaskExecuter taskExecuter = context.getService(TaskExecuter.class);
             taskExecuter.execute(task, state, ctx);
