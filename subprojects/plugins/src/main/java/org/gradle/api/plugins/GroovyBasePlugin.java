@@ -18,12 +18,15 @@ package org.gradle.api.plugins;
 
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.attributes.LibraryElements;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.internal.classpath.ModuleRegistry;
 import org.gradle.api.internal.plugins.DslObject;
+import org.gradle.api.internal.plugins.GroovyClasspath;
+import org.gradle.api.internal.plugins.GroovyJarFile;
 import org.gradle.api.internal.tasks.DefaultGroovySourceSet;
 import org.gradle.api.internal.tasks.DefaultSourceSet;
 import org.gradle.api.model.ObjectFactory;
@@ -41,6 +44,8 @@ import org.gradle.jvm.toolchain.JavaToolchainSpec;
 
 import javax.inject.Inject;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiFunction;
 
 import static org.gradle.api.internal.lambdas.SerializableLambdas.spec;
@@ -128,7 +133,7 @@ public class GroovyBasePlugin implements Plugin<Project> {
     private void configureGroovydoc() {
         project.getTasks().withType(Groovydoc.class).configureEach(groovydoc -> {
             groovydoc.getConventionMapping().map("groovyClasspath", () -> {
-                FileCollection groovyClasspath = groovyRuntime.inferGroovyClasspath(groovydoc.getClasspath());
+                FileCollection groovyClasspath = inferGroovydocClasspath(groovydoc.getClasspath());
                 // Jansi is required to log errors when generating Groovydoc
                 ConfigurableFileCollection jansi = project.getObjects().fileCollection().from(moduleRegistry.getExternalModule("jansi").getImplementationClasspath().getAsFiles());
                 return groovyClasspath.plus(jansi);
@@ -147,5 +152,35 @@ public class GroovyBasePlugin implements Plugin<Project> {
         final JavaPluginExtension extension = project.getExtensions().getByType(JavaPluginExtension.class);
         final JavaToolchainService service = project.getExtensions().getByType(JavaToolchainService.class);
         return toolMapper.apply(service, extension.getToolchain());
+    }
+
+    private FileCollection inferGroovydocClasspath(FileCollection groovydocClasspath) {
+        GroovyJarFile groovyJar = GroovyJarFile.locate(groovydocClasspath);
+        if (groovyJar.getVersion().getMajor() < 3) {
+            return groovyRuntime.inferGroovyClasspath(groovydocClasspath);
+        }
+        return new GroovyClasspath(groovydocClasspath) {
+            @Override
+            public String getDisplayName() {
+                return "Groovydoc runtime classpath";
+            }
+
+            @Override
+            public FileCollection createDelegate() {
+                GroovyJarFile groovyJar = GroovyJarFile.locate(classpath);
+                String groovyDependencyNotation = groovyJar.getDependencyNotation();
+                String notation = groovyJar.getDependencyNotation();
+
+                List<Dependency> dependencies = new ArrayList<>();
+                dependencies.add(project.getDependencies().create(notation));
+                // add new modules for Groovy 3+
+                addGroovyDependency(project, groovyDependencyNotation, dependencies, "groovy-templates");
+                addGroovyDependency(project, groovyDependencyNotation, dependencies, "groovy-ant");
+                addGroovyDependency(project, groovyDependencyNotation, dependencies, "groovy-json");
+                addGroovyDependency(project, groovyDependencyNotation, dependencies, "groovy-xml");
+                addGroovyDependency(project, groovyDependencyNotation, dependencies, "groovy-groovydoc");
+                return project.getConfigurations().detachedConfiguration(dependencies.toArray(new Dependency[0]));
+            }
+        };
     }
 }

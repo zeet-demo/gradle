@@ -15,18 +15,13 @@
  */
 package org.gradle.api.tasks;
 
-import com.google.common.collect.Iterables;
-import org.gradle.api.Buildable;
-import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.file.FileCollection;
-import org.gradle.api.internal.file.collections.LazilyInitializedFileCollection;
+import org.gradle.api.internal.plugins.GroovyClasspath;
 import org.gradle.api.internal.plugins.GroovyJarFile;
-import org.gradle.api.internal.tasks.TaskDependencyResolveContext;
 import org.gradle.util.VersionNumber;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -77,7 +72,7 @@ public class GroovyRuntime {
     public FileCollection inferGroovyClasspath(final Iterable<File> classpath) {
         // alternatively, we could return project.getLayout().files(Runnable)
         // would differ in at least the following ways: 1. live 2. no autowiring
-        return new LazilyInitializedFileCollection() {
+        return new GroovyClasspath(classpath) {
             @Override
             public String getDisplayName() {
                 return "Groovy runtime classpath";
@@ -85,59 +80,26 @@ public class GroovyRuntime {
 
             @Override
             public FileCollection createDelegate() {
-                GroovyJarFile groovyJar = findGroovyJarFile(classpath);
-                if (groovyJar == null) {
-                    throw new GradleException(String.format("Cannot infer Groovy class path because no Groovy Jar was found on class path: %s", Iterables.toString(classpath)));
-                }
-
-                if (groovyJar.isGroovyAll() || project.getRepositories().isEmpty()) {
+                GroovyJarFile groovyJar = GroovyJarFile.locate(classpath);
+                VersionNumber groovyVersion = groovyJar.getVersion();
+                if (groovyJar.isGroovyAll() || groovyVersion.getMajor() == 3) {
                     return project.getLayout().files(groovyJar.getFile());
                 }
 
-                String notation = groovyJar.getDependencyNotation();
                 List<Dependency> dependencies = new ArrayList<>();
+                String notation = groovyJar.getDependencyNotation();
                 dependencies.add(project.getDependencies().create(notation));
-                VersionNumber groovyVersion = groovyJar.getVersion();
                 if (groovyVersion.compareTo(GROOVY_VERSION_WITH_SEPARATE_ANT) >= 0) {
                     // add groovy-ant to bring in Groovydoc for Groovy 2.0+
-                    addGroovyDependency(notation, dependencies, "groovy-ant");
+                    addGroovyDependency(project, notation, dependencies, "groovy-ant");
                 }
                 if (groovyVersion.compareTo(GROOVY_VERSION_REQUIRING_TEMPLATES) >= 0) {
                     // add groovy-templates for Groovy 2.5+
-                    addGroovyDependency(notation, dependencies, "groovy-templates");
-                }
-                if (groovyVersion.getMajor() == 3) {
-                    // add new modules for Groovy 3+
-                    addGroovyDependency(notation, dependencies, "groovy-json");
-                    addGroovyDependency(notation, dependencies, "groovy-xml");
-                    addGroovyDependency(notation, dependencies, "groovy-groovydoc");
+                    addGroovyDependency(project, notation, dependencies, "groovy-templates");
                 }
                 return project.getConfigurations().detachedConfiguration(dependencies.toArray(new Dependency[0]));
-            }
-
-            private void addGroovyDependency(String groovyDependencyNotion, List<Dependency> dependencies, String otherDependency) {
-                // project.getDependencies().create(String) seems to be the only feasible way to create a Dependency with a classifier
-                dependencies.add(project.getDependencies().create(groovyDependencyNotion.replace(":groovy:", ":" + otherDependency + ":")));
-            }
-
-            // let's override this so that delegate isn't created at autowiring time (which would mean on every build)
-            @Override
-            public void visitDependencies(TaskDependencyResolveContext context) {
-                if (classpath instanceof Buildable) {
-                    context.add(classpath);
-                }
             }
         };
     }
 
-    @Nullable
-    private static GroovyJarFile findGroovyJarFile(Iterable<File> classpath) {
-        for (File file : classpath) {
-            GroovyJarFile groovyJar = GroovyJarFile.parse(file);
-            if (groovyJar != null) {
-                return groovyJar;
-            }
-        }
-        return null;
-    }
 }

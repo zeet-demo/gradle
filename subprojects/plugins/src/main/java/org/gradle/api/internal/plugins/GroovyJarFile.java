@@ -15,6 +15,8 @@
  */
 package org.gradle.api.internal.plugins;
 
+import com.google.common.collect.Iterables;
+import org.gradle.api.GradleException;
 import org.gradle.util.VersionNumber;
 
 import javax.annotation.Nullable;
@@ -69,5 +71,15 @@ public class GroovyJarFile {
     public static GroovyJarFile parse(File file) {
         Matcher matcher = FILE_NAME_PATTERN.matcher(file.getName());
         return matcher.matches() ? new GroovyJarFile(file, matcher) : null;
+    }
+
+    public static GroovyJarFile locate(Iterable<File> classpath) {
+        for (File file : classpath) {
+            GroovyJarFile groovyJar = parse(file);
+            if (groovyJar != null) {
+                return groovyJar;
+            }
+        }
+        throw new GradleException(String.format("No Groovy Jar was found on class path: %s", Iterables.toString(classpath)));
     }
 }
