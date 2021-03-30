@@ -42,7 +42,7 @@ abstract class AbstractCompilerContinuousIntegrationTest extends AbstractContinu
                     assert services.get(WorkerDaemonClientsManager).allClients.size() == 0
                 }
             }
-"""
+        """
     }
 
     def "reuses compiler daemons across continuous build instances" () {

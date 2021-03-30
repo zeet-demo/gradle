@@ -43,14 +43,6 @@ class GroovyRuntimeTest extends AbstractProjectBuilderSpec {
         classifier << ["", "-indy"]
     }
 
-    def "inferred Groovy class path uses 'groovy' Jar that is found on class path for groovy 3"() {
-        when:
-        def classpath = project.groovyRuntime.inferGroovyClasspath([project.file("other.jar"), project.file("groovy-3.0.7.jar")])
-
-        then:
-        classpath.singleFile == project.file("groovy-3.0.7.jar")
-    }
-
     @Unroll
     def "inferred Groovy #groovyVersion#classifier class path uses repository dependency if 'groovy' Jar is found on class path (to get transitive dependencies right)"() {
         project.repositories {
@@ -78,6 +70,7 @@ class GroovyRuntimeTest extends AbstractProjectBuilderSpec {
         "2.1.2"       | "-indy"    | ["groovy", "groovy-ant"]
         "2.5.2"       | ""         | ["groovy", "groovy-ant", "groovy-templates"]
         "2.5.2"       | "-indy"    | ["groovy", "groovy-ant", "groovy-templates"]
+        "3.0.7"       | ""         | ["groovy", "groovy-ant", "groovy-templates", "groovy-json", "groovy-xml", "groovy-groovydoc"]
     }
 
     def "useful error message is produced when no groovy runtime could be found on a classpath"() {

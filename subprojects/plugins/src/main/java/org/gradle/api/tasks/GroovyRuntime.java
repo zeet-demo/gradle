@@ -16,7 +16,6 @@
 package org.gradle.api.tasks;
 
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import org.gradle.api.Buildable;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
@@ -29,6 +28,7 @@ import org.gradle.util.VersionNumber;
 
 import javax.annotation.Nullable;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -58,7 +58,6 @@ import java.util.List;
 public class GroovyRuntime {
     private static final VersionNumber GROOVY_VERSION_WITH_SEPARATE_ANT = VersionNumber.parse("2.0");
     private static final VersionNumber GROOVY_VERSION_REQUIRING_TEMPLATES = VersionNumber.parse("2.5");
-    private static final VersionNumber GROOVY_VERSION_REQUIRING_JSONXML = VersionNumber.parse("3.0");
     private final Project project;
 
     public GroovyRuntime(Project project) {
@@ -91,13 +90,12 @@ public class GroovyRuntime {
                     throw new GradleException(String.format("Cannot infer Groovy class path because no Groovy Jar was found on class path: %s", Iterables.toString(classpath)));
                 }
 
-                if (groovyJar.isGroovyAll() || groovyJar.getVersion().getMajor() == 3) {
+                if (groovyJar.isGroovyAll() || project.getRepositories().isEmpty()) {
                     return project.getLayout().files(groovyJar.getFile());
                 }
 
                 String notation = groovyJar.getDependencyNotation();
-                List<Dependency> dependencies = Lists.newArrayList();
-                // project.getDependencies().create(String) seems to be the only feasible way to create a Dependency with a classifier
+                List<Dependency> dependencies = new ArrayList<>();
                 dependencies.add(project.getDependencies().create(notation));
                 VersionNumber groovyVersion = groovyJar.getVersion();
                 if (groovyVersion.compareTo(GROOVY_VERSION_WITH_SEPARATE_ANT) >= 0) {
@@ -108,15 +106,17 @@ public class GroovyRuntime {
                     // add groovy-templates for Groovy 2.5+
                     addGroovyDependency(notation, dependencies, "groovy-templates");
                 }
-                if (groovyVersion.compareTo(GROOVY_VERSION_REQUIRING_JSONXML) >= 0) {
+                if (groovyVersion.getMajor() == 3) {
                     // add new modules for Groovy 3+
                     addGroovyDependency(notation, dependencies, "groovy-json");
                     addGroovyDependency(notation, dependencies, "groovy-xml");
+                    addGroovyDependency(notation, dependencies, "groovy-groovydoc");
                 }
                 return project.getConfigurations().detachedConfiguration(dependencies.toArray(new Dependency[0]));
             }
 
             private void addGroovyDependency(String groovyDependencyNotion, List<Dependency> dependencies, String otherDependency) {
+                // project.getDependencies().create(String) seems to be the only feasible way to create a Dependency with a classifier
                 dependencies.add(project.getDependencies().create(groovyDependencyNotion.replace(":groovy:", ":" + otherDependency + ":")));
             }
 
