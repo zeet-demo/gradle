@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 the original author or authors.
+ * Copyright 2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,22 @@
 
 package org.gradle.normalization.internal;
 
-import org.gradle.normalization.InputNormalizationHandler;
+import com.google.common.collect.Sets;
 
-public interface InputNormalizationHandlerInternal extends InputNormalizationHandler {
-    @Override
-    RuntimeClasspathNormalizationInternal getRuntimeClasspath();
+import java.util.Set;
+
+import static java.util.Collections.emptySet;
+
+public class DefaultSourceFileNormalization implements SourceFileNormalizationInternal {
+    private final EvaluatableFilter<Set<String>> filter = new EvaluatableFilter<>(Sets::newHashSet, emptySet());
 
     @Override
-    SourceFileNormalizationInternal getSourceFiles();
+    public Set<String> getIncludes() {
+        return filter.evaluate();
+    }
+
+    @Override
+    public void includeExtension(String extension) {
+        filter.addToFilter(extension);
+    }
 }

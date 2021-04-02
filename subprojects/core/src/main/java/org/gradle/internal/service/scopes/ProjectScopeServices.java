@@ -92,8 +92,10 @@ import org.gradle.model.internal.registry.DefaultModelRegistry;
 import org.gradle.model.internal.registry.ModelRegistry;
 import org.gradle.normalization.internal.DefaultInputNormalizationHandler;
 import org.gradle.normalization.internal.DefaultRuntimeClasspathNormalization;
+import org.gradle.normalization.internal.DefaultSourceFileNormalization;
 import org.gradle.normalization.internal.InputNormalizationHandlerInternal;
 import org.gradle.normalization.internal.RuntimeClasspathNormalizationInternal;
+import org.gradle.normalization.internal.SourceFileNormalizationInternal;
 import org.gradle.process.internal.ExecFactory;
 import org.gradle.tooling.provider.model.internal.DefaultToolingModelBuilderRegistry;
 import org.gradle.util.Path;
@@ -315,8 +317,12 @@ public class ProjectScopeServices extends DefaultServiceRegistry {
         return instantiator.newInstance(DefaultRuntimeClasspathNormalization.class);
     }
 
-    protected InputNormalizationHandlerInternal createInputNormalizationHandler(Instantiator instantiator, RuntimeClasspathNormalizationInternal runtimeClasspathNormalizationStrategy) {
-        return instantiator.newInstance(DefaultInputNormalizationHandler.class, runtimeClasspathNormalizationStrategy);
+    protected SourceFileNormalizationInternal createSourceFileNormalizationStrategy(Instantiator instantiator) {
+        return instantiator.newInstance(DefaultSourceFileNormalization.class);
+    }
+
+    protected InputNormalizationHandlerInternal createInputNormalizationHandler(Instantiator instantiator, RuntimeClasspathNormalizationInternal runtimeClasspathNormalizationStrategy, SourceFileNormalizationInternal sourceFileNormalizationStrategy) {
+        return instantiator.newInstance(DefaultInputNormalizationHandler.class, runtimeClasspathNormalizationStrategy, sourceFileNormalizationStrategy);
     }
 
     protected TaskDependencyFactory createTaskDependencyFactory() {

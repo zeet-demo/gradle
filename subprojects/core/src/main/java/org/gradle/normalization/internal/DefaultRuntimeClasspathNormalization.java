@@ -20,7 +20,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import org.gradle.api.Action;
-import org.gradle.api.GradleException;
 import org.gradle.api.internal.changedetection.state.IgnoringResourceEntryFilter;
 import org.gradle.api.internal.changedetection.state.IgnoringResourceFilter;
 import org.gradle.api.internal.changedetection.state.PropertiesFileFilter;
@@ -31,9 +30,7 @@ import org.gradle.normalization.PropertiesFileNormalization;
 
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class DefaultRuntimeClasspathNormalization implements RuntimeClasspathNormalizationInternal {
     private final MetaInfNormalization metaInfNormalization = new RuntimeMetaInfNormalization();
@@ -43,7 +40,7 @@ public class DefaultRuntimeClasspathNormalization implements RuntimeClasspathNor
 
     @Override
     public void ignore(String pattern) {
-        resourceFilter.ignore(pattern);
+        resourceFilter.addToFilter(pattern);
     }
 
     @Override
@@ -89,7 +86,7 @@ public class DefaultRuntimeClasspathNormalization implements RuntimeClasspathNor
 
         @Override
         public void ignoreAttribute(String name) {
-            manifestAttributeResourceFilter.ignore(name.toLowerCase(Locale.ROOT));
+            manifestAttributeResourceFilter.addToFilter(name.toLowerCase(Locale.ROOT));
         }
 
         @Override
@@ -100,39 +97,6 @@ public class DefaultRuntimeClasspathNormalization implements RuntimeClasspathNor
 
     private static <T> EvaluatableFilter<T> filter(Function<ImmutableSet<String>, T> initializer, T emptyValue) {
         return new EvaluatableFilter<>(initializer, emptyValue);
-    }
-
-    private static class EvaluatableFilter<T> {
-        private T value;
-        private final Supplier<T> valueSupplier;
-        private final ImmutableSet.Builder<String> builder;
-
-        public EvaluatableFilter(Function<ImmutableSet<String>, T> initializer, T emptyValue) {
-            this.builder = ImmutableSet.builder();
-            // if there are configured ignores, use the initializer to create the value, otherwise return emptyValue
-            this.valueSupplier = () -> Optional.of(builder.build())
-                                                .filter(ignores -> !ignores.isEmpty())
-                                                .map(initializer)
-                                                .orElse(emptyValue);
-        }
-
-        public T evaluate() {
-            if (value == null) {
-                value = valueSupplier.get();
-            }
-            return value;
-        }
-
-        private void checkNotEvaluated() {
-            if (value != null) {
-                throw new GradleException("Cannot configure runtime classpath normalization after execution started.");
-            }
-        }
-
-        public void ignore(String ignore) {
-            checkNotEvaluated();
-            builder.add(ignore);
-        }
     }
 
     private static class DefaultPropertiesFileFilter implements PropertiesFileFilter {
@@ -162,7 +126,7 @@ public class DefaultRuntimeClasspathNormalization implements RuntimeClasspathNor
                     filter = filter(IgnoringResourceEntryFilter::new, ResourceEntryFilter.FILTER_NOTHING);
                     propertyFilters.put(pattern, filter);
                 }
-                PropertiesFileNormalization normalization = filter::ignore;
+                PropertiesFileNormalization normalization = filter::addToFilter;
                 configuration.execute(normalization);
             } else {
                 throw new IllegalStateException("Cannot configure runtime classpath normalization after execution started.");

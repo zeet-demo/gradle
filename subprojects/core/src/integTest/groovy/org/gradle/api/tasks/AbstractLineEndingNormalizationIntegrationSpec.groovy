@@ -65,6 +65,42 @@ abstract class AbstractLineEndingNormalizationIntegrationSpec extends AbstractIn
         [fileType, sensitivity] << [['java', 'groovy', 'kt'], PathSensitivity.values()].combinations()
     }
 
+    @Unroll
+    def "can configure additional file types as source files (#sensitivity.name() path sensitivity)"() {
+        createTaskWithNormalization(sensitivity)
+
+        buildFile << """
+            taskWithInputs {
+                sources.from(project.files("foo"))
+                outputFile = project.file("\${buildDir}/output.txt")
+            }
+            normalization {
+                sourceFiles {
+                    includeExtension "other"
+                }
+            }
+        """
+        file("foo/Changing.java") << "\nhere's a line\nhere's another line\n\n"
+        file('foo/Changing.other') << "\nhere's a line\nhere's another line\n\n"
+
+        when:
+        execute("taskWithInputs")
+
+        then:
+        executedAndNotSkipped(":taskWithInputs")
+
+        when:
+        file('foo/Changing.other').text = file('foo/Changing.other').text.replaceAll('\\r\\n', '\n')
+        cleanWorkspace()
+        execute("taskWithInputs")
+
+        then:
+        reused(":taskWithInputs")
+
+        where:
+        sensitivity << PathSensitivity.values()
+    }
+
     def reused(String taskPath) {
         assert result.groupedOutput.task(taskPath).outcome == statusForReusedOutput
         return true

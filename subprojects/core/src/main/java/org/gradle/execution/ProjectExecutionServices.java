@@ -23,6 +23,7 @@ import org.gradle.api.execution.internal.TaskInputsListeners;
 import org.gradle.api.internal.cache.StringInterner;
 import org.gradle.api.internal.changedetection.TaskExecutionModeResolver;
 import org.gradle.api.internal.changedetection.changes.DefaultTaskExecutionModeResolver;
+import org.gradle.api.internal.changedetection.state.LineEndingAwareFileContentHasher;
 import org.gradle.api.internal.changedetection.state.ResourceSnapshotterCacheService;
 import org.gradle.api.internal.file.FileCollectionFactory;
 import org.gradle.api.internal.file.FileOperations;
@@ -64,12 +65,17 @@ import org.gradle.internal.file.ReservedFileSystemLocation;
 import org.gradle.internal.file.ReservedFileSystemLocationRegistry;
 import org.gradle.internal.fingerprint.classpath.ClasspathFingerprinter;
 import org.gradle.internal.fingerprint.classpath.impl.DefaultClasspathFingerprinter;
+import org.gradle.internal.fingerprint.hashing.FileContentHasher;
 import org.gradle.internal.fingerprint.impl.FileCollectionFingerprinterRegistrations;
 import org.gradle.internal.hash.ClassLoaderHierarchyHasher;
+import org.gradle.internal.hash.FileHasher;
+import org.gradle.internal.hash.LineEndingNormalizationFileHasher;
+import org.gradle.internal.hash.StreamHasher;
 import org.gradle.internal.operations.BuildOperationExecutor;
 import org.gradle.internal.service.DefaultServiceRegistry;
 import org.gradle.internal.snapshot.ValueSnapshotter;
 import org.gradle.internal.work.AsyncWorkTracker;
+import org.gradle.normalization.internal.DefaultSourceFileFilter;
 import org.gradle.normalization.internal.InputNormalizationHandlerInternal;
 
 import java.util.List;
@@ -184,6 +190,23 @@ public class ProjectExecutionServices extends DefaultServiceRegistry {
             inputNormalizationHandler.getRuntimeClasspath().getPropertiesFileFilters(),
             stringInterner
         );
+    }
+
+    FileCollectionFingerprinterRegistrations createFileCollectionFingerprinterRegistrations(
+        StreamHasher streamHasher,
+        StringInterner stringInterner,
+        FileCollectionSnapshotter fileCollectionSnapshotter,
+        ResourceSnapshotterCacheService resourceSnapshotterCacheService,
+        InputNormalizationHandlerInternal inputNormalizationHandler
+    ) {
+        FileHasher lineEndingNormalizingHasher = new LineEndingNormalizationFileHasher(streamHasher);
+        FileContentHasher lineEndingAwareFileContentHasher =
+            new LineEndingAwareFileContentHasher(
+                lineEndingNormalizingHasher,
+                resourceSnapshotterCacheService,
+                new DefaultSourceFileFilter(inputNormalizationHandler.getSourceFiles().getIncludes())
+            );
+        return new FileCollectionFingerprinterRegistrations(stringInterner, fileCollectionSnapshotter, lineEndingAwareFileContentHasher);
     }
 
     FileCollectionFingerprinterRegistry createFileCollectionFingerprinterRegistry(List<FileCollectionFingerprinter> fingerprinters, FileCollectionFingerprinterRegistrations fileCollectionFingerprinterRegistrations) {

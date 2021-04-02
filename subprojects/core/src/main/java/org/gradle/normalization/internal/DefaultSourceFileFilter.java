@@ -17,20 +17,20 @@
 package org.gradle.normalization.internal;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import org.gradle.api.internal.changedetection.state.SourceFileFilter;
 import org.gradle.internal.hash.Hasher;
 
 import javax.annotation.Nullable;
 import java.util.Set;
 
+import static java.util.Collections.emptySet;
 import static org.apache.commons.io.FilenameUtils.getExtension;
 
 public class DefaultSourceFileFilter implements SourceFileFilter {
     // TODO Perhaps instead of having a list of known file extensions, we should use a simple
     // heuristic to determine if the file is text or binary.  Something like what Git uses:
     // https://git.kernel.org/pub/scm/git/git.git/tree/xdiff-interface.c?h=v2.30.0#n187
-    public static final Set<String> KNOWN_SOURCE_FILE_EXTS = ImmutableSet.of(
+    public static final Set<String> DEFAULT_FILTER = ImmutableSet.of(
         "java",
         "groovy",
         "kt"
@@ -38,8 +38,15 @@ public class DefaultSourceFileFilter implements SourceFileFilter {
     private final Set<String> sourceFileExtensions;
 
     public DefaultSourceFileFilter() {
+        this(emptySet());
+    }
+
+    public DefaultSourceFileFilter(Set<String> includes) {
         super();
-        this.sourceFileExtensions = Sets.newHashSet(KNOWN_SOURCE_FILE_EXTS);
+        this.sourceFileExtensions = ImmutableSet.<String>builder()
+            .addAll(DEFAULT_FILTER)
+            .addAll(includes)
+            .build();
     }
 
     @Override

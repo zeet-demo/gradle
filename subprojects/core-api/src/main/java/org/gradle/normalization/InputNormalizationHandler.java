@@ -17,6 +17,7 @@
 package org.gradle.normalization;
 
 import org.gradle.api.Action;
+import org.gradle.api.Incubating;
 import org.gradle.internal.HasInternalProtocol;
 
 /**
@@ -34,7 +35,23 @@ public interface InputNormalizationHandler {
     RuntimeClasspathNormalization getRuntimeClasspath();
 
     /**
+     * Returns the normalization strategy for source files.
+     *
+     * @since 7.1
+     */
+    @Incubating
+    SourceFileNormalization getSourceFiles();
+
+    /**
      * Configures the normalization strategy for the runtime classpath.
      */
     void runtimeClasspath(Action<? super RuntimeClasspathNormalization> configuration);
+
+    /**
+     * Configures the normalization strategy for source files.
+     *
+     * @since 7.1
+     */
+    @Incubating
+    void sourceFiles(Action<? super SourceFileNormalization> configuration);
 }

@@ -18,12 +18,15 @@ package org.gradle.normalization.internal;
 
 import org.gradle.api.Action;
 import org.gradle.normalization.RuntimeClasspathNormalization;
+import org.gradle.normalization.SourceFileNormalization;
 
 public class DefaultInputNormalizationHandler implements InputNormalizationHandlerInternal {
     private final RuntimeClasspathNormalizationInternal runtimeClasspathNormalization;
+    private final SourceFileNormalizationInternal sourceFileNormalization;
 
-    public DefaultInputNormalizationHandler(RuntimeClasspathNormalizationInternal runtimeClasspathNormalization) {
+    public DefaultInputNormalizationHandler(RuntimeClasspathNormalizationInternal runtimeClasspathNormalization, SourceFileNormalizationInternal sourceFileNormalization) {
         this.runtimeClasspathNormalization = runtimeClasspathNormalization;
+        this.sourceFileNormalization = sourceFileNormalization;
     }
 
     @Override
@@ -32,7 +35,17 @@ public class DefaultInputNormalizationHandler implements InputNormalizationHandl
     }
 
     @Override
+    public SourceFileNormalizationInternal getSourceFiles() {
+        return sourceFileNormalization;
+    }
+
+    @Override
     public void runtimeClasspath(Action<? super RuntimeClasspathNormalization> configuration) {
         configuration.execute(getRuntimeClasspath());
+    }
+
+    @Override
+    public void sourceFiles(Action<? super SourceFileNormalization> configuration) {
+        configuration.execute(sourceFileNormalization);
     }
 }

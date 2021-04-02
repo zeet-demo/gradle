@@ -398,8 +398,8 @@ public class VirtualFileSystemServices extends AbstractPluginServiceRegistry {
             ResourceSnapshotterCacheService resourceSnapshotterCacheService
         ) {
             FileHasher lineEndingNormalizingHasher = new LineEndingNormalizationFileHasher(streamHasher);
-            FileContentHasher lineEndingAwareRegularFileHasher = new LineEndingAwareFileContentHasher(lineEndingNormalizingHasher, resourceSnapshotterCacheService, new DefaultSourceFileFilter());
-            return new FileCollectionFingerprinterRegistrations(stringInterner, fileCollectionSnapshotter, lineEndingAwareRegularFileHasher);
+            FileContentHasher lineEndingAwareFileContentHasher = new LineEndingAwareFileContentHasher(lineEndingNormalizingHasher, resourceSnapshotterCacheService, new DefaultSourceFileFilter());
+            return new FileCollectionFingerprinterRegistrations(stringInterner, fileCollectionSnapshotter, lineEndingAwareFileContentHasher);
         }
 
         FileCollectionFingerprinterRegistry createFileCollectionFingerprinterRegistry(List<FileCollectionFingerprinter> fingerprinters, FileCollectionFingerprinterRegistrations fileCollectionFingerprinterRegistrations) {
