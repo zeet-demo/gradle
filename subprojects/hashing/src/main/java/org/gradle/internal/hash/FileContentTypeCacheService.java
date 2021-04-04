@@ -14,15 +14,9 @@
  * limitations under the License.
  */
 
-package org.gradle.api.internal.changedetection.state;
+package org.gradle.internal.hash;
 
-import org.gradle.internal.hash.Hasher;
-
-/**
- * Represents a filter which can determine if a given file should be considered a
- * source file or not.
- */
-public interface SourceFileFilter {
-    boolean isSourceFile(String path);
-    void appendConfigurationToHasher(Hasher hasher);
+public interface FileContentTypeCacheService {
+    FileContentType getFileContentType(String path, HashCode hashCode);
+    void storeContentType(String path, HashCode hashCode, FileContentType contentType);
 }
