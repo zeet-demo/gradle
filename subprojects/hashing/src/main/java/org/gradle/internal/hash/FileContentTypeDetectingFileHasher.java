@@ -16,6 +16,7 @@
 
 package org.gradle.internal.hash;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 
 public class FileContentTypeDetectingFileHasher extends AbstractFileHasher {
@@ -28,7 +29,7 @@ public class FileContentTypeDetectingFileHasher extends AbstractFileHasher {
 
     @Override
     public HashCode hash(File file) {
-        FileContentTypeDetectingInputStream inputStream = new FileContentTypeDetectingInputStream(getDefaultInputStream(file));
+        FileContentTypeDetectingInputStream inputStream = new FileContentTypeDetectingInputStream(new BufferedInputStream(getDefaultInputStream(file)));
         HashCode hashCode = hash(inputStream);
         contentTypeDetectionService.storeContentType(file.getAbsolutePath(), hashCode, inputStream.getContentType());
         return hashCode;
