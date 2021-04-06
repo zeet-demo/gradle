@@ -30,7 +30,9 @@ public class DefaultFileContentTypeCacheService implements FileContentTypeCacheS
 
     @Override
     public FileContentType getFileContentType(String path, HashCode hashCode) {
-        return cache.get(hashCode, () -> FileContentType.BINARY);
+        FileContentType contentType = cache.getIfPresent(hashCode);
+        // default to binary if the contentType is not already cached
+        return contentType != null ? contentType : FileContentType.BINARY;
     }
 
     @Override

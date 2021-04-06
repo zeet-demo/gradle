@@ -24,8 +24,10 @@ import java.io.InputStream;
  * control characters in the file.  If so, then it is likely a binary file.
  */
 public class FileContentTypeDetectingInputStream extends InputStream {
+    private final static int CHAR_SCANNING_LIMIT = 80000;
     private final InputStream delegate;
     private boolean controlCharactersFound;
+    private int count;
 
     public FileContentTypeDetectingInputStream(InputStream delegate) {
         this.delegate = delegate;
@@ -34,7 +36,7 @@ public class FileContentTypeDetectingInputStream extends InputStream {
     @Override
     public int read() throws IOException {
         int next = delegate.read();
-        if (isControlCharacter(next)) {
+        if (count++ < CHAR_SCANNING_LIMIT && isControlCharacter(next)) {
             controlCharactersFound = true;
         }
         return next;
@@ -44,11 +46,11 @@ public class FileContentTypeDetectingInputStream extends InputStream {
         return isInControlRange(c) && isNotCommonTextChar(c);
     }
 
-    private boolean isInControlRange(int c) {
+    private static boolean isInControlRange(int c) {
         return c >= 0x00 && c < 0x20;
     }
 
-    private boolean isNotCommonTextChar(int c) {
+    private static boolean isNotCommonTextChar(int c) {
         return c != 0x09  // tab
             && c != 0x0a  // line feed
             && c != 0x0c  // form feed
