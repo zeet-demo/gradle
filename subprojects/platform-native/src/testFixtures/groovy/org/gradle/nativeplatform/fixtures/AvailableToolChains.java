@@ -265,6 +265,7 @@ public class AvailableToolChains {
         File rootSwiftInstall = new File("/opt/swift");
         File[] swiftCandidates = GUtil.getOrDefault(rootSwiftInstall.listFiles(swiftInstall -> swiftInstall.isDirectory() && !swiftInstall.getName().equals("latest")), () -> new File[0]);
 
+        System.out.println("candidates: " + swiftCandidates);
         for (File swiftInstall : swiftCandidates) {
             File swiftc = new File(swiftInstall, "/usr/bin/swiftc");
             SearchResult<SwiftcMetadata> version = versionDeterminer.getCompilerMetaData(Collections.emptyList(), spec -> spec.executable(swiftc));
@@ -273,6 +274,7 @@ public class AvailableToolChains {
                 toolChains.add(new InstalledSwiftc(binDir, version.getComponent().getVersion()).inPath(binDir, new File("/usr/bin")));
             }
         }
+        System.out.println("toolchains: " + toolChains);
 
         // On macOS, we assume co-located Xcode is installed into /opt/xcode and default location at /Applications/Xcode.app
         toolChains.addAll(findXcodes().stream().map(InstalledXcode::getSwiftc).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList()));
@@ -581,7 +583,7 @@ public class AvailableToolChains {
 
         @Override
         public String getBuildScriptConfig() {
-            String config =  String.format("%s(%s) {\n", getId(), getImplementationClass());
+            String config = String.format("%s(%s) {\n", getId(), getImplementationClass());
             for (File pathEntry : getPathEntries()) {
                 config += String.format("     path file('%s')\n", pathEntry.toURI());
             }
@@ -989,7 +991,7 @@ public class AvailableToolChains {
 
         @Override
         public boolean meets(ToolChainRequirement requirement) {
-            switch(requirement) {
+            switch (requirement) {
                 case AVAILABLE:
                 case CLANG:
                 case GCC_COMPATIBLE:
