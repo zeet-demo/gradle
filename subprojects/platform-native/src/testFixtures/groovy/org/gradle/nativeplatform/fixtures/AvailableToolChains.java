@@ -96,6 +96,7 @@ public class AvailableToolChains {
      */
     @Nullable
     public static InstalledToolChain getToolChain(ToolChainRequirement requirement) {
+        System.out.println("Toolchains: " + getToolChains());
         for (ToolChainCandidate toolChainCandidate : getToolChains()) {
             if (toolChainCandidate.meets(requirement)) {
                 assert toolChainCandidate.isAvailable();
