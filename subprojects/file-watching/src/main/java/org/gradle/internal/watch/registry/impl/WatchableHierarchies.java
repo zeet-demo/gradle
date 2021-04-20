@@ -123,6 +123,7 @@ public class WatchableHierarchies {
     private SnapshotHierarchy invalidateUnsupportedFileSystems(SnapshotHierarchy root, Invalidator invalidator) {
         try {
             return watchableFileSystemDetector.detectUnsupportedFileSystems()
+                .peek(fs -> System.out.printf("Unsupported file system found at %s: type: %s, device name: %s, remote: %s%n", fs.getMountPoint(), fs.getFileSystemType(), fs.getDeviceName(), fs.isRemote()))
                 .reduce(
                     root,
                     (updatedRoot, fileSystem) -> invalidator.invalidate(fileSystem.getMountPoint().getAbsolutePath(), updatedRoot),
