@@ -79,6 +79,7 @@ public class ActionImpl implements ${BuildAction.name}<String> {
         String result2 = withConnection { ProjectConnection connection ->
             connection.action(action2).run()
         }
+        println("Result: $result2")
         cl2.close()
         Files.delete(implJar.toPath())
 
