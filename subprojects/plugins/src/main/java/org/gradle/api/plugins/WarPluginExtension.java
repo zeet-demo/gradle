@@ -16,28 +16,16 @@
 
 package org.gradle.api.plugins;
 
-import org.gradle.api.Project;
-
-import java.io.File;
+import org.gradle.api.file.DirectoryProperty;
 
 /**
- * <p>A {@link Convention} used for the WarPlugin.</p>
+ * <p>An extension used for the WarPlugin.</p>
  *
- * @deprecated use {@link WarPluginExtension} instead. This class is scheduled for removal in Gradle 8.0.
+ * @since 7.1
  */
-@Deprecated
-public abstract class WarPluginConvention {
+public interface WarPluginExtension {
     /**
      * Returns the web application directory.
      */
-    public abstract File getWebAppDir();
-
-    /**
-     * The name of the web application directory, relative to the project directory.
-     */
-    public abstract String getWebAppDirName();
-
-    public abstract void setWebAppDirName(String webAppDirName);
-
-    public abstract Project getProject();
+    DirectoryProperty getWebAppDir();
 }

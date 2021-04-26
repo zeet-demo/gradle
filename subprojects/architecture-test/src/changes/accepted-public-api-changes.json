@@ -587,6 +587,7 @@
             "changes": []
         },
         {
+<<<<<<< HEAD
             "type": "org.gradle.api.plugins.JavaPluginExtension",
             "member": "Method org.gradle.api.plugins.JavaPluginExtension.getAutoTargetJvmDisabled()",
             "acceptation": "The functionality was already available for several releases in JavaPluginConvention",
@@ -673,6 +674,18 @@
             "changes": [
                 "Method added to interface"
             ]
+        },
+        {
+            "type": "org.gradle.api.plugins.WarPluginExtension",
+            "member": "Class org.gradle.api.plugins.WarPluginExtension",
+            "acceptation": "The functionality was already available for several releases in WarPluginConvention",
+            "changes": []
+        },
+        {
+            "type": "org.gradle.api.plugins.WarPluginExtension",
+            "member": "Method org.gradle.api.plugins.WarPluginExtension.getWebAppDir()",
+            "acceptation": "The functionality was already available for several releases in WarPluginConvention",
+            "changes": []
         }
     ]
 }

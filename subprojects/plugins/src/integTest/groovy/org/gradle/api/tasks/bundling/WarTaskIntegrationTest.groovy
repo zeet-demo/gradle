@@ -359,4 +359,20 @@ task war(type: War) {
         then:
         skipped ":war"
     }
+
+    def "can configure webAppDir in warPlugin block"() {
+        given:
+        buildFile << """
+            plugins {
+                id 'war'
+            }
+
+            warPlugin {
+                webAppDir = file('src/main/myWebApp')
+            }
+        """
+
+        expect:
+        succeeds "war"
+    }
 }

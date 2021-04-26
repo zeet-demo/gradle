@@ -18,20 +18,23 @@ package org.gradle.api.plugins.internal;
 
 import org.gradle.api.Project;
 import org.gradle.api.plugins.WarPluginConvention;
+import org.gradle.api.plugins.WarPluginExtension;
 import org.gradle.api.reflect.HasPublicType;
 import org.gradle.api.reflect.TypeOf;
+import org.gradle.util.internal.RelativePathUtil;
 
 import java.io.File;
 
 import static org.gradle.api.reflect.TypeOf.typeOf;
 
 public class DefaultWarPluginConvention extends WarPluginConvention implements HasPublicType {
-    private String webAppDirName;
-    private final Project project;
 
-    public DefaultWarPluginConvention(Project project) {
+    private final Project project;
+    private final WarPluginExtension extension;
+
+    public DefaultWarPluginConvention(Project project, WarPluginExtension extension) {
         this.project = project;
-        webAppDirName = "src/main/webapp";
+        this.extension = extension;
     }
 
     @Override
@@ -41,17 +44,19 @@ public class DefaultWarPluginConvention extends WarPluginConvention implements H
 
     @Override
     public File getWebAppDir() {
-        return project.file(webAppDirName);
+        return extension.getWebAppDir().get().getAsFile();
     }
 
     @Override
     public String getWebAppDirName() {
-        return webAppDirName;
+        File projectDir = project.getProjectDir();
+        File webAppDir = extension.getWebAppDir().get().getAsFile();
+        return RelativePathUtil.relativePath(projectDir, webAppDir);
     }
 
     @Override
     public void setWebAppDirName(String webAppDirName) {
-        this.webAppDirName = webAppDirName;
+        extension.getWebAppDir().set(project.getLayout().getProjectDirectory().dir(webAppDirName));
     }
 
     @Override
