@@ -587,7 +587,6 @@
             "changes": []
         },
         {
-<<<<<<< HEAD
             "type": "org.gradle.api.plugins.JavaPluginExtension",
             "member": "Method org.gradle.api.plugins.JavaPluginExtension.getAutoTargetJvmDisabled()",
             "acceptation": "The functionality was already available for several releases in JavaPluginConvention",
@@ -685,6 +684,36 @@
             "type": "org.gradle.api.plugins.WarPluginExtension",
             "member": "Method org.gradle.api.plugins.WarPluginExtension.getWebAppDir()",
             "acceptation": "The functionality was already available for several releases in WarPluginConvention",
+            "changes": []
+        },
+        {
+            "type": "org.gradle.api.plugins.ProjectReportsPluginExtension",
+            "member": "Class org.gradle.api.plugins.ProjectReportsPluginExtension",
+            "acceptation": "[ADD YOUR CUSTOM REASON HERE]",
+            "changes": []
+        },
+        {
+            "type": "org.gradle.api.plugins.ProjectReportsPluginExtension",
+            "member": "Method org.gradle.api.plugins.ProjectReportsPluginExtension.getProjectReportDir()",
+            "acceptation": "[ADD YOUR CUSTOM REASON HERE]",
+            "changes": []
+        },
+        {
+            "type": "org.gradle.api.plugins.ProjectReportsPluginExtension",
+            "member": "Method org.gradle.api.plugins.ProjectReportsPluginExtension.getProjectReportDirName()",
+            "acceptation": "[ADD YOUR CUSTOM REASON HERE]",
+            "changes": []
+        },
+        {
+            "type": "org.gradle.api.plugins.ProjectReportsPluginExtension",
+            "member": "Method org.gradle.api.plugins.ProjectReportsPluginExtension.getProjects()",
+            "acceptation": "[ADD YOUR CUSTOM REASON HERE]",
+            "changes": []
+        },
+        {
+            "type": "org.gradle.api.plugins.ProjectReportsPluginExtension",
+            "member": "Method org.gradle.api.plugins.ProjectReportsPluginExtension.setProjectReportDirName(java.lang.String)",
+            "acceptation": "[ADD YOUR CUSTOM REASON HERE]",
             "changes": []
         }
     ]

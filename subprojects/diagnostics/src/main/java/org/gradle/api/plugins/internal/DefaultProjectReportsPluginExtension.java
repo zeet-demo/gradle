@@ -18,49 +18,39 @@ package org.gradle.api.plugins.internal;
 
 import org.gradle.api.NonNullApi;
 import org.gradle.api.Project;
-import org.gradle.api.plugins.ProjectReportsPluginConvention;
 import org.gradle.api.plugins.ProjectReportsPluginExtension;
-import org.gradle.api.reflect.HasPublicType;
-import org.gradle.api.reflect.TypeOf;
+import org.gradle.api.reporting.ReportingExtension;
+import org.gradle.util.internal.WrapUtil;
 
 import java.io.File;
 import java.util.Set;
 
-import static org.gradle.api.reflect.TypeOf.typeOf;
-
 @NonNullApi
-public class DefaultProjectReportsPluginConvention extends ProjectReportsPluginConvention implements HasPublicType {
+public class DefaultProjectReportsPluginExtension implements ProjectReportsPluginExtension {
     private String projectReportDirName = "project";
-    private final ProjectReportsPluginExtension extension;
     private final Project project;
 
-    public DefaultProjectReportsPluginConvention(ProjectReportsPluginExtension extension, Project project) {
-        this.extension = extension;
+    public DefaultProjectReportsPluginExtension(Project project) {
         this.project = project;
     }
 
     @Override
-    public TypeOf<?> getPublicType() {
-        return typeOf(ProjectReportsPluginConvention.class);
-    }
-
-    @Override
     public String getProjectReportDirName() {
-        return extension.getProjectReportDirName();
+        return projectReportDirName;
     }
 
     @Override
     public void setProjectReportDirName(String projectReportDirName) {
-        extension.setProjectReportDirName(projectReportDirName);
+        this.projectReportDirName = projectReportDirName;
     }
 
     @Override
     public File getProjectReportDir() {
-        return extension.getProjectReportDir();
+        return project.getExtensions().getByType(ReportingExtension.class).file(projectReportDirName);
     }
 
     @Override
     public Set<Project> getProjects() {
-        return extension.getProjects();
+        return WrapUtil.toSet(project);
     }
 }
