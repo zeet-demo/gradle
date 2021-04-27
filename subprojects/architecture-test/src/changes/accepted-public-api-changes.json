@@ -715,6 +715,150 @@
             "member": "Method org.gradle.api.plugins.ProjectReportsPluginExtension.setProjectReportDirName(java.lang.String)",
             "acceptation": "[ADD YOUR CUSTOM REASON HERE]",
             "changes": []
+        },
+        {
+            "type": "org.gradle.plugins.ear.EarPluginExtension",
+            "member": "Class org.gradle.plugins.ear.EarPluginExtension",
+            "acceptation": "[ADD YOUR CUSTOM REASON HERE]",
+            "changes": []
+        },
+        {
+            "type": "org.gradle.plugins.ear.EarPluginExtension",
+            "member": "Class org.gradle.plugins.ear.EarPluginExtension",
+            "acceptation": "[ADD YOUR CUSTOM REASON HERE]",
+            "changes": []
+        },
+        {
+            "type": "org.gradle.plugins.ear.EarPluginExtension",
+            "member": "Method org.gradle.plugins.ear.EarPluginExtension.appDirName(java.lang.String)",
+            "acceptation": "[ADD YOUR CUSTOM REASON HERE]",
+            "changes": []
+        },
+        {
+            "type": "org.gradle.plugins.ear.EarPluginExtension",
+            "member": "Method org.gradle.plugins.ear.EarPluginExtension.appDirName(java.lang.String)",
+            "acceptation": "[ADD YOUR CUSTOM REASON HERE]",
+            "changes": []
+        },
+        {
+            "type": "org.gradle.plugins.ear.EarPluginExtension",
+            "member": "Method org.gradle.plugins.ear.EarPluginExtension.deploymentDescriptor(groovy.lang.Closure)",
+            "acceptation": "[ADD YOUR CUSTOM REASON HERE]",
+            "changes": []
+        },
+        {
+            "type": "org.gradle.plugins.ear.EarPluginExtension",
+            "member": "Method org.gradle.plugins.ear.EarPluginExtension.deploymentDescriptor(groovy.lang.Closure)",
+            "acceptation": "[ADD YOUR CUSTOM REASON HERE]",
+            "changes": []
+        },
+        {
+            "type": "org.gradle.plugins.ear.EarPluginExtension",
+            "member": "Method org.gradle.plugins.ear.EarPluginExtension.deploymentDescriptor(org.gradle.api.Action)",
+            "acceptation": "[ADD YOUR CUSTOM REASON HERE]",
+            "changes": []
+        },
+        {
+            "type": "org.gradle.plugins.ear.EarPluginExtension",
+            "member": "Method org.gradle.plugins.ear.EarPluginExtension.deploymentDescriptor(org.gradle.api.Action)",
+            "acceptation": "[ADD YOUR CUSTOM REASON HERE]",
+            "changes": []
+        },
+        {
+            "type": "org.gradle.plugins.ear.EarPluginExtension",
+            "member": "Method org.gradle.plugins.ear.EarPluginExtension.getAppDirName()",
+            "acceptation": "[ADD YOUR CUSTOM REASON HERE]",
+            "changes": []
+        },
+        {
+            "type": "org.gradle.plugins.ear.EarPluginExtension",
+            "member": "Method org.gradle.plugins.ear.EarPluginExtension.getAppDirName()",
+            "acceptation": "[ADD YOUR CUSTOM REASON HERE]",
+            "changes": []
+        },
+        {
+            "type": "org.gradle.plugins.ear.EarPluginExtension",
+            "member": "Method org.gradle.plugins.ear.EarPluginExtension.getDeploymentDescriptor()",
+            "acceptation": "[ADD YOUR CUSTOM REASON HERE]",
+            "changes": []
+        },
+        {
+            "type": "org.gradle.plugins.ear.EarPluginExtension",
+            "member": "Method org.gradle.plugins.ear.EarPluginExtension.getDeploymentDescriptor()",
+            "acceptation": "[ADD YOUR CUSTOM REASON HERE]",
+            "changes": []
+        },
+        {
+            "type": "org.gradle.plugins.ear.EarPluginExtension",
+            "member": "Method org.gradle.plugins.ear.EarPluginExtension.getGenerateDeploymentDescriptor()",
+            "acceptation": "[ADD YOUR CUSTOM REASON HERE]",
+            "changes": []
+        },
+        {
+            "type": "org.gradle.plugins.ear.EarPluginExtension",
+            "member": "Method org.gradle.plugins.ear.EarPluginExtension.getGenerateDeploymentDescriptor()",
+            "acceptation": "[ADD YOUR CUSTOM REASON HERE]",
+            "changes": []
+        },
+        {
+            "type": "org.gradle.plugins.ear.EarPluginExtension",
+            "member": "Method org.gradle.plugins.ear.EarPluginExtension.getLibDirName()",
+            "acceptation": "[ADD YOUR CUSTOM REASON HERE]",
+            "changes": []
+        },
+        {
+            "type": "org.gradle.plugins.ear.EarPluginExtension",
+            "member": "Method org.gradle.plugins.ear.EarPluginExtension.getLibDirName()",
+            "acceptation": "[ADD YOUR CUSTOM REASON HERE]",
+            "changes": []
+        },
+        {
+            "type": "org.gradle.plugins.ear.EarPluginExtension",
+            "member": "Method org.gradle.plugins.ear.EarPluginExtension.libDirName(java.lang.String)",
+            "acceptation": "[ADD YOUR CUSTOM REASON HERE]",
+            "changes": []
+        },
+        {
+            "type": "org.gradle.plugins.ear.EarPluginExtension",
+            "member": "Method org.gradle.plugins.ear.EarPluginExtension.libDirName(java.lang.String)",
+            "acceptation": "[ADD YOUR CUSTOM REASON HERE]",
+            "changes": []
+        },
+        {
+            "type": "org.gradle.plugins.ear.EarPluginExtension",
+            "member": "Method org.gradle.plugins.ear.EarPluginExtension.setAppDirName(java.lang.String)",
+            "acceptation": "[ADD YOUR CUSTOM REASON HERE]",
+            "changes": []
+        },
+        {
+            "type": "org.gradle.plugins.ear.EarPluginExtension",
+            "member": "Method org.gradle.plugins.ear.EarPluginExtension.setAppDirName(java.lang.String)",
+            "acceptation": "[ADD YOUR CUSTOM REASON HERE]",
+            "changes": []
+        },
+        {
+            "type": "org.gradle.plugins.ear.EarPluginExtension",
+            "member": "Method org.gradle.plugins.ear.EarPluginExtension.setDeploymentDescriptor(org.gradle.plugins.ear.descriptor.DeploymentDescriptor)",
+            "acceptation": "[ADD YOUR CUSTOM REASON HERE]",
+            "changes": []
+        },
+        {
+            "type": "org.gradle.plugins.ear.EarPluginExtension",
+            "member": "Method org.gradle.plugins.ear.EarPluginExtension.setDeploymentDescriptor(org.gradle.plugins.ear.descriptor.DeploymentDescriptor)",
+            "acceptation": "[ADD YOUR CUSTOM REASON HERE]",
+            "changes": []
+        },
+        {
+            "type": "org.gradle.plugins.ear.EarPluginExtension",
+            "member": "Method org.gradle.plugins.ear.EarPluginExtension.setLibDirName(java.lang.String)",
+            "acceptation": "[ADD YOUR CUSTOM REASON HERE]",
+            "changes": []
+        },
+        {
+            "type": "org.gradle.plugins.ear.EarPluginExtension",
+            "member": "Method org.gradle.plugins.ear.EarPluginExtension.setLibDirName(java.lang.String)",
+            "acceptation": "[ADD YOUR CUSTOM REASON HERE]",
+            "changes": []
         }
     ]
 }
