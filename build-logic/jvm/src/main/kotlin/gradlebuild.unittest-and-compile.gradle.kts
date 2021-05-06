@@ -210,6 +210,7 @@ fun configureTests() {
 
     tasks.withType<Test>().configureEach {
         configureAndroidUserHome()
+        outputs.cacheIf { false }
         filterEnvironmentVariables()
 
         maxParallelForks = project.maxParallelForks
