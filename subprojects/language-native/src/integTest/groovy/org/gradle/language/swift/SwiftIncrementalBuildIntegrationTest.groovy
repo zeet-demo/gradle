@@ -380,6 +380,11 @@ class SwiftIncrementalBuildIntegrationTest extends AbstractInstalledToolChainInt
         if (toolChain.version >= VersionNumber.parse("4.2")) {
             result.add("module.swiftdeps~moduleonly")
         }
+        if (toolChain.version >= VersionNumber.parse("5.3")) {
+            // Seems to be introduced by 5.3:
+            // https://github.com/bazelbuild/rules_swift/issues/496
+            result.add("main~partial.swiftsourceinfo")
+        }
         result.add("module.swiftdeps")
         result.add("output-file-map.json")
         return result
@@ -401,15 +406,18 @@ class SwiftIncrementalBuildIntegrationTest extends AbstractInstalledToolChainInt
         return intermediateFileFor(sourceFile, intermediateFilesDir, ".d")
     }
 
-    private List<String> getCompileAndLinkTasks(String projectPath="") {
-        [ "${projectPath}:compileDebugSwift", "${projectPath}:linkDebug" ]
+    private List<String> getCompileAndLinkTasks(String projectPath = "") {
+        ["${projectPath}:compileDebugSwift", "${projectPath}:linkDebug"]
     }
-    private List<String> getAssembleAppTasks(String projectPath="") {
-        getCompileAndLinkTasks(projectPath) + [ "${projectPath}:installDebug", "${projectPath}:assemble" ]
+
+    private List<String> getAssembleAppTasks(String projectPath = "") {
+        getCompileAndLinkTasks(projectPath) + ["${projectPath}:installDebug", "${projectPath}:assemble"]
     }
-    private List<String> getAssembleLibTasks(String projectPath="") {
-        getCompileAndLinkTasks(projectPath) + [ "${projectPath}:assemble" ]
+
+    private List<String> getAssembleLibTasks(String projectPath = "") {
+        getCompileAndLinkTasks(projectPath) + ["${projectPath}:assemble"]
     }
+
     private List<String> getAssembleAppAndLibTasks() {
         getAssembleLibTasks(":greeter") + getAssembleAppTasks(":app")
     }
