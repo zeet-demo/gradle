@@ -151,7 +151,7 @@ class SwiftIncrementalBuildIntegrationTest extends AbstractInstalledToolChainInt
         outputs.deletedClasses("multiply", "sum")
 
         // See https://github.com/gradle/gradle-native/issues/1004
-        if (toolchainUnderTest.version.major == 5 && toolchainUnderTest.version.minor == 0) {
+        if (toolchainUnderTest.version.major == 5) {
             outputs.recompiledClasses('renamed-sum')
         } else {
             outputs.recompiledClasses('greeter', 'renamed-sum', 'main')
@@ -187,7 +187,7 @@ class SwiftIncrementalBuildIntegrationTest extends AbstractInstalledToolChainInt
         outputs.deletedClasses("multiply", "sum")
 
         // See https://github.com/gradle/gradle-native/issues/1004
-        if (toolchainUnderTest.version.major == 5 && toolchainUnderTest.version.minor == 0) {
+        if (toolchainUnderTest.version.major == 5) {
             outputs.recompiledClasses('renamed-sum')
         } else {
             outputs.recompiledClasses('greeter', 'renamed-sum')
@@ -377,7 +377,7 @@ class SwiftIncrementalBuildIntegrationTest extends AbstractInstalledToolChainInt
             result.add(dependFileFor(swiftFile).relativizeFrom(intermediateFilesDir).path)
             result.add(swiftDepsFileFor(swiftFile).relativizeFrom(intermediateFilesDir).path)
         }
-        if (toolChain.version.compareTo(VersionNumber.parse("4.2")) >= 0) {
+        if (toolChain.version.major == 4) {
             result.add("module.swiftdeps~moduleonly")
         }
         result.add("module.swiftdeps")
