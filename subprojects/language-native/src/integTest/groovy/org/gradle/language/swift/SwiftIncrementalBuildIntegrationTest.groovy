@@ -377,7 +377,7 @@ class SwiftIncrementalBuildIntegrationTest extends AbstractInstalledToolChainInt
             result.add(dependFileFor(swiftFile).relativizeFrom(intermediateFilesDir).path)
             result.add(swiftDepsFileFor(swiftFile).relativizeFrom(intermediateFilesDir).path)
         }
-        if (toolChain.version.major == 4) {
+        if (toolChain.version >= VersionNumber.parse("4.2")) {
             result.add("module.swiftdeps~moduleonly")
         }
         result.add("module.swiftdeps")
