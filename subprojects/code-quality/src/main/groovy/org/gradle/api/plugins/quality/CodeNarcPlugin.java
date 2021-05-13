@@ -19,14 +19,16 @@ import org.gradle.api.Plugin;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.file.RegularFile;
+import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.internal.ConventionMapping;
+import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.plugins.GroovyBasePlugin;
 import org.gradle.api.plugins.quality.internal.AbstractCodeQualityPlugin;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
-import org.gradle.api.tasks.GroovySourceSet;
 import org.gradle.api.tasks.SourceSet;
 
+import javax.inject.Inject;
 import java.io.File;
 
 import static org.gradle.api.internal.lambdas.SerializableLambdas.action;
@@ -113,7 +115,16 @@ public class CodeNarcPlugin extends AbstractCodeQualityPlugin<CodeNarc> {
     @Override
     protected void configureForSourceSet(final SourceSet sourceSet, CodeNarc task) {
         task.setDescription("Run CodeNarc analysis for " + sourceSet.getName() + " classes");
-        GroovySourceSet groovySourceSet = sourceSet.getExtensions().getByType(GroovySourceSet.class);
-        task.setSource(groovySourceSet.getAllGroovy());
+
+        SourceDirectorySet groovy = (SourceDirectorySet) sourceSet.getExtensions().getByName("groovy");
+        SourceDirectorySet allGroovy = getObjectFactory().sourceDirectorySet("allGroovy" + sourceSet.getName(), "allGroovy" + sourceSet.getName());
+        allGroovy.source(groovy);
+        allGroovy.getFilter().include("**/*.groovy");
+        task.setSource(allGroovy);
+    }
+
+    @Inject
+    public ObjectFactory getObjectFactory() {
+        throw new UnsupportedOperationException();
     }
 }
