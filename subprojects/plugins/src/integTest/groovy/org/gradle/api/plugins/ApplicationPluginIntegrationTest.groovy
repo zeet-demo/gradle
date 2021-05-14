@@ -513,6 +513,18 @@ startScripts {
         outputContains("App Home: ${file('build/install/sample').absolutePath}")
     }
 
+    def "can pass multiple system properties using applicationDefaultJvmArgs"() {
+        given:
+        buildFile << """
+            applicationDefaultJvmArgs = ["-Dfoo=bar", "-Dfizz=buzz"]
+        """
+        when:
+        succeeds('installDist')
+
+        then:
+        runViaStartScript()
+    }
+
     ExecutionResult runViaStartScript(TestFile startScriptDir = file('build/install/sample/bin')) {
         OperatingSystem.current().isWindows() ? runViaWindowsStartScript(startScriptDir) : runViaUnixStartScript(startScriptDir)
     }
@@ -699,7 +711,6 @@ rootProject.name = 'sample'
         executed(':compileJava', ':processResources', ':classes', ':jar', ':run')
     }
 
-    @NotYetImplemented
     @Issue("https://github.com/gradle/gradle-private/issues/3386")
     @Requires(TestPrecondition.UNIX_DERIVATIVE)
     def "does not execute code in environment variables"() {
@@ -720,10 +731,10 @@ rootProject.name = 'sample'
                 environment JAVA_OPTS: '`\$(touch "${exploit.absolutePath}")`'
             }
         """
-        succeeds('execStartScript')
+        fails('execStartScript')
 
         then:
-        outputContains('Hello World!')
+        errorOutput.contains('Error: Could not find or load main class `$(touch')
         !exploit.exists()
     }
 }

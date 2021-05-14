@@ -113,7 +113,8 @@ public class StartScriptTemplateBindingFactory implements Transformer<Map<String
                     jvmOpt = jvmOpt.replace("'", "'\"'\"'");
                     jvmOpt = jvmOpt.replace("`", "'\"`\"'");
                     jvmOpt = jvmOpt.replace("$", "\\$");
-                    return "\"" + jvmOpt + "\"";
+                    //return "\"" + jvmOpt + "\"";
+                    return jvmOpt;
                 }
             });
 
@@ -122,6 +123,8 @@ public class StartScriptTemplateBindingFactory implements Transformer<Map<String
             Joiner spaceJoiner = Joiner.on(" ");
             if (Iterables.size(quotedDefaultJvmOpts) > 0) {
                 return "'" + spaceJoiner.join(quotedDefaultJvmOpts) + "'";
+                //return "\"" + spaceJoiner.join(quotedDefaultJvmOpts) + "\"";
+                //return spaceJoiner.join(quotedDefaultJvmOpts);
             }
 
             return "\"\"";
