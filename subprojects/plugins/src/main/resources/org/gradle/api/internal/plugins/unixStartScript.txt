@@ -179,7 +179,13 @@ save () {
 }
 APP_ARGS=`save "\$@"`
 
-# Collect all arguments for the java command, following the shell quoting and substitution rules
-eval set -- \$DEFAULT_JVM_OPTS \$JAVA_OPTS \$${optsEnvironmentVar} <% if ( appNameSystemProperty ) { %>"\"-D${appNameSystemProperty}=\$APP_BASE_NAME\"" <% } %>-classpath "\"\$CLASSPATH\"" <% if ( mainClassName.startsWith('--module ') ) { %>--module-path "\"\$MODULE_PATH\"" <% } %>${mainClassName} "\$APP_ARGS"
+# split arguments in DEFAULT_JVM_OPTS into array
+FIELDS=`echo \$DEFAULT_JVM_OPTS | sed 's/^"//;s/"\$//'`
+NO_FIELDS=`echo \$FIELDS | awk -F'" "' '{print NF}'`
+field=1
+while [ "\$field" -le \$NO_FIELDS ]; do
+    set -- "\$@" "`echo \$FIELDS | awk -v field="\$field" -F'" "' '{print \$field}'`"
+    field=\$(( field + 1 ))
+done
 
-exec "\$JAVACMD" "\$@"
+exec "\$JAVACMD" "\$@" \$JAVA_OPTS \$${optsEnvironmentVar} <% if ( appNameSystemProperty ) { %>"\"-D${appNameSystemProperty}=\$APP_BASE_NAME\"" <% } %>-classpath "\$CLASSPATH" <% if ( mainClassName.startsWith('--module ') ) { %>--module-path "\$MODULE_PATH" <% } %>${mainClassName} "\$APP_ARGS"

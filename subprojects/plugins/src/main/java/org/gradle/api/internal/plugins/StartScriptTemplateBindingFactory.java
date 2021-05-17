@@ -107,12 +107,10 @@ public class StartScriptTemplateBindingFactory implements Transformer<Map<String
             Iterable<String> quotedDefaultJvmOpts = Iterables.transform(CollectionUtils.toStringList(defaultJvmOpts), new Function<String, String>() {
                 @Override
                 public String apply(String jvmOpt) {
-                    //quote ', ", \, $. Probably not perfect. TODO: identify non-working cases, fail-fast on them
+                    //quote ', \. Probably not perfect. TODO: identify non-working cases, fail-fast on them
                     jvmOpt = jvmOpt.replace("\\", "\\\\");
-                    jvmOpt = jvmOpt.replace("\"", "\\\"");
                     jvmOpt = jvmOpt.replace("'", "'\"'\"'");
                     jvmOpt = jvmOpt.replace("`", "'\"`\"'");
-                    jvmOpt = jvmOpt.replace("$", "\\$");
                     return "\"" + jvmOpt + "\"";
                 }
             });
