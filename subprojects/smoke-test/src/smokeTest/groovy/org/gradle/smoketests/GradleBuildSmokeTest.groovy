@@ -24,7 +24,7 @@ class GradleBuildSmokeTest extends AbstractGradleceptionSmokeTest {
 
     def "can build Gradle distribution"() {
         when:
-        result = runner(':distributions-full:binDistributionZip', ':distributions-full:binInstallation', '--stacktrace')
+        result = runner(':distributions-full:binDistributionZip', ':distributions-full:binInstallation', '--stacktrace', '--no-build-cache')
             .expectDeprecationWarning("The AbstractCompile.destinationDir property has been deprecated. " +
                 "This is scheduled to be removed in Gradle 8.0. " +
                 "Please use the destinationDirectory property instead. " +
