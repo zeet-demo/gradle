@@ -701,7 +701,7 @@ rootProject.name = 'sample'
 
     @Issue("https://github.com/gradle/gradle-private/issues/3386")
     @Requires(TestPrecondition.UNIX_DERIVATIVE)
-    def "does not execute code in environment variables"() {
+    def "does not execute code in user-set environment variable"() {
         when:
         succeeds('installDist')
 
@@ -716,7 +716,7 @@ rootProject.name = 'sample'
             task execStartScript(type: Exec) {
                 workingDir 'build/install/sample/bin'
                 commandLine './sample'
-                environment JAVA_OPTS: '`\$(touch "${exploit.absolutePath}")`'
+                environment ${envVar}: '`\$(touch "${exploit.absolutePath}")`'
             }
         """
         fails('execStartScript')
@@ -724,5 +724,8 @@ rootProject.name = 'sample'
         then:
         //outputContains('Hello World!')
         !exploit.exists()
+
+        where:
+        envVar << ["JAVA_OPTS", "SAMPLE_OPTS"]
     }
 }
